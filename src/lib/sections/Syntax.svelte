@@ -59,8 +59,3 @@
 	framework publishes one IRI per skill, with its preferred label and its alternatives, using the
 	<a href="https://www.w3.org/TR/skos-reference/">SKOS</a> vocabulary.
 </p>
-
-<p class="caption">
-	Each pair is checked when the site is built: the Turtle and JSON-LD versions must produce exactly
-	the same triples, or the build fails.
-</p>

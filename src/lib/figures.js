@@ -131,7 +131,7 @@ function arrowhead(s, id) {
     .attr("fill", "var(--muted)");
 }
 
-/** Figure 1 — three facts chained into a path. */
+/** Figure 1 — one triple, which can expand into a chain of three. Call update("one" | "chain"). */
 export function chainFigure(width) {
   const nodes = [
     {label: "Maria", sub: "a worker"},
@@ -146,62 +146,118 @@ export function chainFigure(width) {
   ];
   const narrow = width < 560;
   const W = width;
-  const H = narrow ? 360 : 128;
-  const pos = nodes.map((_, i) =>
-    narrow ? {x: 24, y: 40 + i * 92} : {x: 70 + (i * (W - 140)) / (nodes.length - 1), y: 62}
-  );
-  const s = svg(W, H, "Maria holds a Mechatronics degree, which certifies PLC Programming, which the Automation Technician job requires.");
+  const H = narrow ? 380 : 150;
+
+  // Node positions for each state
+  const layout = {
+    one: narrow
+      ? [{x: 24, y: 40}, {x: 24, y: 172}]
+      : [{x: W * 0.22, y: 58}, {x: W * 0.72, y: 58}],
+    chain: nodes.map((_, i) =>
+      narrow ? {x: 24, y: 40 + i * 98} : {x: 70 + (i * (W - 140)) / (nodes.length - 1), y: 58}
+    )
+  };
+  const at = (mode, i) => layout[mode][i] ?? layout.chain[i];
+
+  const s = svg(W, H, "Maria holds a Mechatronics degree. Expanded: the degree certifies PLC Programming, which the Automation Technician job requires.");
   arrowhead(s, "chain-arrow");
 
-  if (!narrow) {
-    const roles = [
-      {x: pos[0].x, t: "subject"},
-      {x: (pos[0].x + pos[1].x) / 2, t: "predicate"},
-      {x: pos[1].x, t: "object"}
-    ];
-    s.append("g")
-      .selectAll("text")
-      .data(roles)
-      .join("text")
-      .attr("class", "role")
-      .attr("x", (d) => d.x)
-      .attr("y", 10)
-      .attr("text-anchor", "middle")
-      .text((d) => d.t);
-  }
-
-  for (const e of edges) {
-    const a = pos[e.from], b = pos[e.to];
+  const gap = 9;
+  const ends = (mode, e) => {
+    const a = at(mode, e.from), b = at(mode, e.to);
     const dir = narrow ? Math.sign(b.y - a.y) : Math.sign(b.x - a.x);
-    const gap = 9;
-    s.append("line")
-      .attr("x1", narrow ? a.x : a.x + dir * gap)
-      .attr("y1", narrow ? a.y + dir * gap : a.y)
-      .attr("x2", narrow ? b.x : b.x - dir * gap)
-      .attr("y2", narrow ? b.y - dir * gap : b.y)
-      .attr("stroke", "var(--muted)")
-      .attr("marker-end", "url(#chain-arrow)");
-    s.append("text")
-      .attr("class", "mono")
-      .attr("x", narrow ? a.x + 16 : (a.x + b.x) / 2)
-      .attr("y", narrow ? (a.y + b.y) / 2 + 4 : a.y - 10)
-      .attr("text-anchor", narrow ? "start" : "middle")
-      .text(e.label);
-  }
+    return narrow
+      ? {x1: a.x, y1: a.y + dir * gap, x2: b.x, y2: b.y - dir * gap}
+      : {x1: a.x + dir * gap, y1: a.y, x2: b.x - dir * gap, y2: b.y};
+  };
+  const labelAt = (mode, e) => {
+    const a = at(mode, e.from), b = at(mode, e.to);
+    return narrow ? {x: a.x + 16, y: (a.y + b.y) / 2 + 4} : {x: (a.x + b.x) / 2, y: a.y - 10};
+  };
 
-  const g = s.append("g").selectAll("g").data(nodes).join("g").attr("transform", (d, i) => `translate(${pos[i].x},${pos[i].y})`);
-  g.append("circle").attr("r", 5).attr("fill", (d) => (d.accent ? "var(--accent)" : "var(--ink)"));
-  g.append("text")
-    .attr("x", narrow ? 0 : 0)
+  const line = s.append("g").selectAll("line").data(edges).join("line")
+    .attr("stroke", "var(--muted)")
+    .attr("marker-end", "url(#chain-arrow)");
+  const edgeLabel = s.append("g").selectAll("text").data(edges).join("text")
+    .attr("class", "mono")
+    .attr("text-anchor", narrow ? "start" : "middle")
+    .text((e) => e.label);
+
+  const node = s.append("g").selectAll("g").data(nodes).join("g");
+  node.append("circle").attr("r", 5).attr("fill", (d) => (d.accent ? "var(--accent)" : "var(--ink)"));
+  node.append("text")
+    .attr("class", "label")
+    .attr("x", narrow ? 16 : 0)
     .attr("y", narrow ? 0 : 26)
-    .attr("dx", narrow ? 16 : 0)
     .attr("dy", narrow ? "0.35em" : 0)
     .attr("text-anchor", narrow ? "start" : "middle")
-    .attr("class", "label")
     .text((d) => d.label);
-  if (!narrow)
-    g.append("text").attr("y", 42).attr("text-anchor", "middle").attr("class", "faint").text((d) => d.sub);
-  return s.node();
+  node.append("text")
+    .attr("class", "faint")
+    .attr("x", narrow ? 16 : 0)
+    .attr("y", narrow ? 17 : 42)
+    .attr("dy", narrow ? "0.35em" : 0)
+    .attr("text-anchor", narrow ? "start" : "middle")
+    .text((d) => d.sub);
+
+  // Subject / predicate / object, shown for the single triple
+  const roles = [
+    {t: "subject", at: () => (narrow ? {x: 40, y: at("one", 0).y + 36} : {x: at("one", 0).x, y: 120})},
+    {t: "predicate", at: () => (narrow ? {x: 40, y: labelAt("one", edges[0]).y + 16} : {x: labelAt("one", edges[0]).x, y: 120})},
+    {t: "object", at: () => (narrow ? {x: 40, y: at("one", 1).y + 36} : {x: at("one", 1).x, y: 120})}
+  ];
+  const role = s.append("g").selectAll("text").data(roles).join("text")
+    .attr("class", "role")
+    .attr("text-anchor", narrow ? "start" : "middle")
+    .attr("x", (d) => d.at().x)
+    .attr("y", (d) => d.at().y)
+    .text((d) => d.t);
+  if (!narrow) {
+    // a light bracket under each part
+    s.append("g").attr("class", "brackets").selectAll("line").data(roles).join("line")
+      .attr("stroke", "var(--rule)")
+      .attr("x1", (d) => d.at().x - 34).attr("x2", (d) => d.at().x + 34)
+      .attr("y1", 104).attr("y2", 104);
+  }
+
+  let state = null;
+  function update(mode) {
+    const first = state === null;
+    state = mode;
+    const chain = mode === "chain";
+    const t = (sel, delay = 0) => (first ? sel : sel.transition().delay(delay).duration(650).ease(d3.easeCubicInOut));
+
+    t(node).attr("transform", (d, i) => `translate(${at(mode, i).x},${at(mode, i).y})`)
+      .attr("opacity", (d, i) => (i < 2 || chain ? 1 : 0));
+
+    line.each(function (e, i) {
+      const sel = d3.select(this);
+      const g = ends(mode, e);
+      if (i === 0) {
+        t(sel).attr("x1", g.x1).attr("y1", g.y1).attr("x2", g.x2).attr("y2", g.y2).attr("opacity", 1);
+        return;
+      }
+      sel.attr("x1", g.x1).attr("y1", g.y1).attr("x2", g.x2).attr("y2", g.y2);
+      const len = Math.hypot(g.x2 - g.x1, g.y2 - g.y1);
+      sel.attr("stroke-dasharray", `${len} ${len}`);
+      if (chain) {
+        sel.attr("stroke-dashoffset", first ? 0 : len).attr("opacity", 1);
+        t(sel, 350 + i * 150).attr("stroke-dashoffset", 0);
+      } else {
+        t(sel).attr("opacity", 0);
+      }
+    });
+    t(edgeLabel, 0)
+      .attr("x", (e) => labelAt(mode, e).x)
+      .attr("y", (e) => labelAt(mode, e).y)
+      .attr("opacity", (e, i) => (i === 0 || chain ? 1 : 0));
+    t(role).attr("opacity", chain ? 0 : 1);
+    t(s.selectAll(".brackets line")).attr("opacity", chain ? 0 : 1);
+  }
+
+  const el = s.node();
+  el.update = update;
+  return el;
 }
 
 /** Figure 2 — four phrasings of one skill; with RDF they point to one IRI. */
@@ -269,7 +325,8 @@ export function namesFigure(width) {
 
 /** Figure 3 — independently published graphs that merge on shared IRIs. */
 const SKIP = new Set([RDF_TYPE, SCHEMA + "teaches", SCHEMA + "provider", SCHEMA + "educationalCredentialAwarded", SKOS + "inScheme", SKOS + "broader"]);
-const ROLE_ORDER = ["person", "college", "credential", "skill", "job", "employer"];
+// Within each publisher's column: the publisher (or person) first, then what it describes.
+const ROLE_ORDER = ["person", "college", "employer", "credential", "job", "skill"];
 
 export function mergeFigure({quads, index, panels, width}) {
   const narrow = width < 560;
@@ -313,7 +370,7 @@ export function mergeFigure({quads, index, panels, width}) {
     .attr("y", (d, i) => (narrow ? (H / panels.length) * i + 12 : 12))
     .attr("text-anchor", narrow ? "start" : "middle")
     .text((d) => d.title);
-  const gLinks = s.append("g").attr("fill", "none");
+  const gLinks = s.append("g").attr("fill", "none").attr("shape-rendering", "geometricPrecision").attr("stroke-linecap", "round");
   const gNodes = s.append("g");
   let current = new Map();
 
@@ -405,22 +462,8 @@ export function mergeFigure({quads, index, panels, width}) {
 
     heads.transition().duration(400).attr("opacity", merged ? 0 : 1);
 
-    gLinks
-      .selectAll("path")
-      .data(edges, (d) => d.id)
-      .join(
-        (e) => e.append("path").attr("opacity", 0),
-        (u) => u,
-        (x) => x.transition().duration(250).attr("opacity", 0).remove()
-      )
-      .attr("d", (d) => curve(d.a, d.b))
-      .attr("stroke", (d) => (d.hot ? "var(--accent)" : "var(--faint)"))
-      .attr("stroke-width", (d) => (d.hot ? 1.5 : 1))
-      .transition()
-      .delay(merged ? 650 : 450)
-      .duration(500)
-      .attr("opacity", (d) => (merged && !d.hot ? 0.55 : 1));
-
+    // Where every node starts this transition: its old spot, or (when merging)
+    // the average of the copies it is replacing, or (when splitting) the merged node.
     const prev = current;
     current = new Map(nodes.map((d) => [d.id, d]));
     const start = (d) => {
@@ -428,6 +471,46 @@ export function mergeFigure({quads, index, panels, width}) {
       const copies = [...prev.values()].filter((p) => p.iri === d.iri);
       return copies.length ? {x: d3.mean(copies, (c) => c.x), y: d3.mean(copies, (c) => c.y)} : d;
     };
+    const goal = (d) => {
+      const direct = current.get(d.id) ?? current.get(d.iri);
+      if (direct) return direct;
+      const copies = nodes.filter((n) => n.iri === d.iri);
+      return copies.length ? {x: d3.mean(copies, (c) => c.x), y: d3.mean(copies, (c) => c.y)} : d;
+    };
+
+    // Links travel with their endpoints: interpolate the curve frame by frame.
+    const travel = (from, to) => (d) => {
+      const a0 = from(d.a), b0 = from(d.b), a1 = to(d.a), b1 = to(d.b);
+      return (t) => {
+        const lerp = (p, q) => ({x: p.x + (q.x - p.x) * t, y: p.y + (q.y - p.y) * t});
+        return curve(lerp(a0, a1), lerp(b0, b1));
+      };
+    };
+    const DURATION = 700;
+    const ease = d3.easeCubicInOut;
+
+    gLinks
+      .selectAll("path")
+      .data(edges, (d) => d.id)
+      .join(
+        (e) => e.append("path").attr("opacity", 0).attr("d", (d) => curve(start(d.a), start(d.b))),
+        (u) => u,
+        (x) =>
+          x
+            .transition()
+            .duration(DURATION)
+            .ease(ease)
+            .attrTween("d", travel((n) => n, goal))
+            .attr("opacity", 0)
+            .remove()
+      )
+      .attr("stroke", (d) => (d.hot ? "var(--accent)" : "var(--faint)"))
+      .attr("stroke-width", (d) => (d.hot ? 1.5 : 1))
+      .transition()
+      .duration(DURATION)
+      .ease(ease)
+      .attrTween("d", travel(start, (n) => n))
+      .attr("opacity", (d) => (merged && !d.hot ? 0.5 : 1));
 
     const labelFor = (d) => (d.role === "skill" && (!merged || narrow) ? "" : short(index.label(d.iri)));
     const node = gNodes
@@ -445,10 +528,10 @@ export function mergeFigure({quads, index, panels, width}) {
         (x) =>
           x
             .transition()
-            .duration(650)
-            .ease(d3.easeCubicInOut)
+            .duration(DURATION)
+            .ease(ease)
             .attr("transform", (d) => {
-              const t = current.get(d.iri) ?? d;
+              const t = goal(d);
               return `translate(${t.x},${t.y})`;
             })
             .attr("opacity", 0)
@@ -457,8 +540,8 @@ export function mergeFigure({quads, index, panels, width}) {
 
     node
       .transition()
-      .duration(650)
-      .ease(d3.easeCubicInOut)
+      .duration(DURATION)
+      .ease(ease)
       .attr("transform", (d) => `translate(${d.x},${d.y})`)
       .attr("opacity", 1);
     node
