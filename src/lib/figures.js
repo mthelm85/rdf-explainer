@@ -65,7 +65,7 @@ export function exampleGraph(triples, width) {
     if (!leaf) continue;
     s.append("path")
       .attr("fill", "none")
-      .attr("stroke", "var(--md-outline)")
+      .attr("stroke", "var(--faint)")
       .attr("stroke-dasharray", "3 4")
       .attr("d", `M${leaf.x},${leaf.y + 6} C${leaf.x},${st.y - 10} ${st.x},${leaf.y + 20} ${st.x},${st.y - 22}`);
   }
@@ -77,7 +77,7 @@ export function exampleGraph(triples, width) {
       .selectAll("path")
       .data(st.rows)
       .join("path")
-      .attr("stroke", "var(--md-outline)")
+      .attr("stroke", "var(--faint)")
       .attr("d", (r) => d3.linkHorizontal()({source: [st.x, st.y], target: [r.x - (r.literal ? 0 : 6), r.y]}));
     g.append("g")
       .selectAll("text")
@@ -88,11 +88,11 @@ export function exampleGraph(triples, width) {
       .attr("y", (r) => r.y - 6)
       .attr("text-anchor", "end")
       .text((r) => r.p);
-    g.append("circle").attr("cx", st.x).attr("cy", st.y).attr("r", 5).attr("fill", "var(--md-primary)");
+    g.append("circle").attr("cx", st.x).attr("cy", st.y).attr("r", 5).attr("fill", "var(--accent)");
     g.append("text").attr("class", "mono strong").attr("x", st.x - 4).attr("y", st.y - 20).text(st.subject);
 
     const leaf = g.append("g").selectAll("g").data(st.rows).join("g").attr("transform", (r) => `translate(${r.x},${r.y})`);
-    leaf.filter((r) => !r.literal).append("circle").attr("r", 5).attr("fill", "var(--md-on-surface)");
+    leaf.filter((r) => !r.literal).append("circle").attr("r", 5).attr("fill", "var(--ink)");
     leaf.filter((r) => !r.literal).append("text").attr("class", "mono").attr("x", 10).attr("dy", "0.35em").text(text);
     const lit = leaf.filter((r) => r.literal);
     lit.append("rect").attr("class", "lit-box").attr("y", -11).attr("height", 22).attr("rx", 6).attr("width", (r) => leafWidth(r) - 8);
@@ -105,20 +105,8 @@ export function exampleGraph(triples, width) {
   return wrap;
 }
 
-// Text sizing inside figures; colors come from the page stylesheet.
-const FIGURE_CSS = `
-  svg.fig text { font-family: var(--sans-serif); }
-  svg.fig .label { font-size: 12.5px; }
-  svg.fig .faint { font-size: 11.5px; }
-  svg.fig .mono { font-family: var(--monospace); font-size: 11.5px; }
-  svg.fig .mono.strong { font-weight: 500; }
-  svg.fig .role { font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; }
-  svg.fig .label, svg.fig .faint, svg.fig .mono { paint-order: stroke; stroke-width: 4px; stroke-linejoin: round; }
-`;
-
 function svg(width, height, label) {
   const s = d3.create("svg").attr("class", "fig");
-  s.append("style").text(FIGURE_CSS);
   return s
     .attr("viewBox", [0, 0, width, height])
     .attr("width", width)
@@ -140,7 +128,7 @@ function arrowhead(s, id) {
     .attr("orient", "auto")
     .append("path")
     .attr("d", "M0,-3.5L8,0L0,3.5")
-    .attr("fill", "var(--md-on-surface-variant)");
+    .attr("fill", "var(--muted)");
 }
 
 /** Figure 1 — three facts chained into a path. */
@@ -191,7 +179,7 @@ export function chainFigure(width) {
       .attr("y1", narrow ? a.y + dir * gap : a.y)
       .attr("x2", narrow ? b.x : b.x - dir * gap)
       .attr("y2", narrow ? b.y - dir * gap : b.y)
-      .attr("stroke", "var(--md-on-surface-variant)")
+      .attr("stroke", "var(--muted)")
       .attr("marker-end", "url(#chain-arrow)");
     s.append("text")
       .attr("class", "mono")
@@ -202,7 +190,7 @@ export function chainFigure(width) {
   }
 
   const g = s.append("g").selectAll("g").data(nodes).join("g").attr("transform", (d, i) => `translate(${pos[i].x},${pos[i].y})`);
-  g.append("circle").attr("r", 5).attr("fill", (d) => (d.accent ? "var(--md-primary)" : "var(--md-on-surface)"));
+  g.append("circle").attr("r", 5).attr("fill", (d) => (d.accent ? "var(--accent)" : "var(--ink)"));
   g.append("text")
     .attr("x", narrow ? 0 : 0)
     .attr("y", narrow ? 0 : 26)
@@ -244,7 +232,7 @@ export function namesFigure(width) {
     .join("path")
     .attr("d", (d, i) => link(i))
     .attr("fill", "none")
-    .attr("stroke", "var(--md-primary)")
+    .attr("stroke", "var(--accent)")
     .attr("stroke-width", 1.25);
   paths.each(function () {
     const L = this.getTotalLength();
@@ -256,7 +244,7 @@ export function namesFigure(width) {
   rows.append("text").attr("class", "label").attr("y", 0).text((d) => `“${d.text}”`);
 
   const t = s.append("g").attr("transform", `translate(${target.x},${target.y})`);
-  const dot = t.append("circle").attr("r", 5).attr("fill", "var(--md-outline)");
+  const dot = t.append("circle").attr("r", 5).attr("fill", "var(--faint)");
   const title = t.append("text").attr("class", "label").attr("x", 14).attr("dy", "-0.2em");
   const sub = t.append("text").attr("class", "mono").attr("x", 14).attr("dy", "1.2em");
 
@@ -271,7 +259,7 @@ export function namesFigure(width) {
       .attr("stroke-dashoffset", function () {
         return on ? 0 : this.getTotalLength();
       });
-    dot.transition().duration(400).attr("fill", on ? "var(--md-primary)" : "var(--md-outline)");
+    dot.transition().duration(400).attr("fill", on ? "var(--accent)" : "var(--faint)");
     title.text(on ? "PLC Programming" : "No match");
     sub.text(on ? "sk:plc-programming" : "four unrelated strings");
   };
@@ -426,7 +414,7 @@ export function mergeFigure({quads, index, panels, width}) {
         (x) => x.transition().duration(250).attr("opacity", 0).remove()
       )
       .attr("d", (d) => curve(d.a, d.b))
-      .attr("stroke", (d) => (d.hot ? "var(--md-primary)" : "var(--md-outline)"))
+      .attr("stroke", (d) => (d.hot ? "var(--accent)" : "var(--faint)"))
       .attr("stroke-width", (d) => (d.hot ? 1.5 : 1))
       .transition()
       .delay(merged ? 650 : 450)
@@ -477,7 +465,7 @@ export function mergeFigure({quads, index, panels, width}) {
       .select("circle")
       .attr("r", (d) => (d.role === "skill" ? 3.5 : 5))
       .attr("fill", (d) =>
-        d.role !== "skill" ? "var(--md-on-surface)" : merged ? (held.has(d.iri) && wanted.has(d.iri) ? "var(--md-primary)" : "var(--md-outline)") : count.get(d.iri) > 1 ? "var(--md-primary)" : "var(--md-outline)"
+        d.role !== "skill" ? "var(--ink)" : merged ? (held.has(d.iri) && wanted.has(d.iri) ? "var(--accent)" : "var(--faint)") : count.get(d.iri) > 1 ? "var(--accent)" : "var(--faint)"
       );
     node
       .select("text")
@@ -527,7 +515,7 @@ export function networkMini(n, mode, size = 220) {
   const edges = [];
   if (mode === "p2p") for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) edges.push([pts[i], pts[j]]);
   else for (const p of pts) edges.push([p, [c, c]]);
-  const color = mode === "p2p" ? "var(--md-tertiary)" : "var(--md-primary)";
+  const color = mode === "p2p" ? "var(--accent-2)" : "var(--accent)";
   s.append("g")
     .selectAll("line")
     .data(edges)
@@ -539,7 +527,7 @@ export function networkMini(n, mode, size = 220) {
     .attr("stroke", color)
     .attr("stroke-opacity", mode === "p2p" ? Math.max(0.2, Math.min(0.8, 24 / edges.length)) : 0.8)
     .attr("stroke-width", 1);
-  if (mode !== "p2p") s.append("circle").attr("cx", c).attr("cy", c).attr("r", 7).attr("fill", "var(--md-primary)");
+  if (mode !== "p2p") s.append("circle").attr("cx", c).attr("cy", c).attr("r", 7).attr("fill", "var(--accent)");
   s.append("g")
     .selectAll("circle")
     .data(pts)
@@ -547,6 +535,6 @@ export function networkMini(n, mode, size = 220) {
     .attr("cx", (p) => p[0])
     .attr("cy", (p) => p[1])
     .attr("r", Math.max(2.5, Math.min(5, 50 / n)))
-    .attr("fill", "var(--md-on-surface)");
+    .attr("fill", "var(--ink)");
   return s.node();
 }

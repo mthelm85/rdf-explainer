@@ -1,28 +1,33 @@
 {
-  "type": "module",
-  "private": true,
-  "name": "rdf-explainer",
-  "description": "An Observable Framework explainer of the Resource Description Framework (RDF) and its role in education and workforce data ecosystems.",
-  "scripts": {
-    "clean": "rimraf src/.observablehq/cache",
-    "build": "observable build",
-    "dev": "observable preview",
-    "deploy": "observable deploy",
-    "observable": "observable"
-  },
-  "dependencies": {
-    "@observablehq/framework": "^1.13.3",
-    "@observablehq/inputs": "^0.12.0",
-    "@observablehq/plot": "^0.6.17",
-    "d3": "^7.9.0",
-    "htl": "^0.3.1",
-    "jsonld": "^9.0.0",
-    "n3": "^2.7.12"
-  },
-  "devDependencies": {
-    "rimraf": "^5.0.5"
-  },
-  "engines": {
-    "node": ">=18"
-  }
+	"name": "rdf-explainer",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"description": "A short, minimal explainer of the Resource Description Framework (RDF) and why linked data matters for education and workforce ecosystems.",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"prepare": "svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json"
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-static": "^4.0.0",
+		"@sveltejs/kit": "^3.0.0",
+		"@sveltejs/vite-plugin-svelte": "^7.2.0",
+		"svelte": "^5.56.7",
+		"svelte-check": "^4.6.0",
+		"typescript": "^6.0.3",
+		"vite": "^8.3.0"
+	},
+	"dependencies": {
+		"@observablehq/plot": "^0.6.17",
+		"d3": "^7.9.0",
+		"jsonld": "^9.0.0",
+		"n3": "^2.7.12"
+	},
+	"imports": {
+		"#lib": "./src/lib/index.js",
+		"#lib/*": "./src/lib/*"
+	}
 }

@@ -1,0 +1,187 @@
+/* Minimal, typographic design. One accent color, hairline marks, system fonts.
+   Light theme only. Text colors meet WCAG AA (≥ 4.5:1) on the background; --faint also meets
+   3:1 for meaningful graphics. */
+
+:root {
+	--sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, 'Helvetica Neue', Arial, sans-serif;
+	--mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+	--bg: #ffffff;
+	--bg-alt: #f6f6f6;
+	--ink: #111111;
+	--muted: #5f5f5f; /* 6.4:1 */
+	--faint: #767676; /* 4.5:1 */
+	--rule: #e5e5e5;
+	--accent: #2563eb; /* 5.2:1 */
+	--accent-2: #c2410c; /* 5.2:1 */
+
+	color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	background: var(--bg);
+	color: var(--ink);
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+	font: 17px/1.65 var(--sans);
+	-webkit-font-smoothing: antialiased;
+}
+
+h1 {
+	font-size: 2.5rem;
+	font-weight: 600;
+	letter-spacing: -0.025em;
+	line-height: 1.1;
+	margin: 0 0 1.25rem;
+}
+
+h2 {
+	font-size: 1.2rem;
+	font-weight: 600;
+	letter-spacing: -0.01em;
+	margin: 4.5rem 0 0.75rem;
+}
+
+h3 {
+	font-size: 1rem;
+	font-weight: 600;
+	margin: 2.75rem 0 0.5rem;
+}
+
+p {
+	margin: 0 0 1rem;
+}
+
+a {
+	color: var(--ink);
+	text-decoration: underline;
+	text-decoration-color: var(--faint);
+	text-underline-offset: 3px;
+}
+
+a:hover {
+	text-decoration-color: var(--ink);
+}
+
+:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 3px;
+}
+
+code {
+	font: 0.85em var(--mono);
+	color: var(--muted);
+	overflow-wrap: anywhere;
+}
+
+pre {
+	margin: 0;
+	padding: 14px 16px;
+	background: var(--bg-alt);
+	border-radius: 6px;
+	font: 13px/1.6 var(--mono);
+	overflow-x: auto;
+}
+
+pre code {
+	font: inherit;
+	color: var(--ink);
+	overflow-wrap: normal;
+}
+
+.lede {
+	font-size: 1.2rem;
+	line-height: 1.55;
+	color: var(--muted);
+}
+
+.caption {
+	font-size: 0.85rem;
+	color: var(--muted);
+	margin: 0.5rem 0 0;
+}
+
+figure {
+	margin: 1.5rem 0 2rem;
+}
+
+/* Syntax colors */
+.tok-iri {
+	color: var(--accent);
+}
+.tok-string,
+.tok-number {
+	color: var(--accent-2);
+}
+.tok-comment {
+	color: var(--muted);
+}
+.tok-keyword,
+.tok-key {
+	font-weight: 600;
+}
+
+/* SVG figure text */
+svg {
+	font-family: var(--sans);
+	overflow: visible;
+}
+
+svg .label,
+svg .faint,
+svg .mono {
+	paint-order: stroke;
+	stroke: var(--bg);
+	stroke-width: 4px;
+	stroke-linejoin: round;
+}
+
+svg .label {
+	font-size: 12px;
+	fill: var(--ink);
+}
+
+svg .faint {
+	font-size: 11px;
+	fill: var(--muted);
+}
+
+svg .mono {
+	font-family: var(--mono);
+	font-size: 11px;
+	fill: var(--muted);
+}
+
+svg .mono.strong {
+	fill: var(--ink);
+	font-weight: 600;
+}
+
+svg .role {
+	font-size: 10px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	fill: var(--muted);
+}
+
+svg .lit-box {
+	fill: var(--bg);
+	stroke: var(--faint);
+}
+
+/* Observable Plot */
+figure[class^='plot-'],
+svg[class^='plot-'] {
+	--plot-background: var(--bg);
+	color: var(--muted);
+	font-size: 11px;
+}

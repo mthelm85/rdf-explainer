@@ -1,5 +1,17 @@
+node_modules
+
+# Output
+/.svelte-kit
+/build
+
+# OS
 .DS_Store
-/dist/
-node_modules/
-yarn-error.log
-src/.observablehq/cache/
+Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Vite
+vite.config.js.timestamp-*
