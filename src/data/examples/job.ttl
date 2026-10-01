@@ -1,0 +1,10 @@
+@prefix schema: <https://schema.org/> .
+@prefix sk:     <https://skills.riverbend.example/skill/> .
+@prefix acme:   <https://jobs.acme-robotics.example/> .
+
+acme:job-automation-technician
+    a schema:JobPosting ;
+    schema:title "Automation Technician" ;
+    schema:hiringOrganization acme:org ;
+    schema:baseSalary 68000 ;
+    schema:skills sk:plc-programming, sk:robot-operation .

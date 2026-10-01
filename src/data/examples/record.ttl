@@ -1,0 +1,14 @@
+@prefix schema: <https://schema.org/> .
+@prefix sk:     <https://skills.riverbend.example/skill/> .
+@prefix rcc:    <https://catalog.riverbend-cc.example/> .
+@prefix wallet: <https://wallet.example/> .
+
+wallet:maria
+    a schema:Person ;
+    schema:name "Maria Alvarez" ;
+    schema:hasCredential rcc:credential-aas-mechatronics .
+
+rcc:credential-aas-mechatronics
+    a schema:EducationalOccupationalCredential ;
+    schema:name "AAS in Mechatronics" ;
+    schema:competencyRequired sk:plc-programming, sk:robot-operation .

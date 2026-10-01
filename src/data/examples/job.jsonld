@@ -1,0 +1,16 @@
+{
+  "@context": {
+    "schema": "https://schema.org/",
+    "sk": "https://skills.riverbend.example/skill/",
+    "acme": "https://jobs.acme-robotics.example/"
+  },
+  "@id": "acme:job-automation-technician",
+  "@type": "schema:JobPosting",
+  "schema:title": "Automation Technician",
+  "schema:hiringOrganization": { "@id": "acme:org" },
+  "schema:baseSalary": 68000,
+  "schema:skills": [
+    { "@id": "sk:plc-programming" },
+    { "@id": "sk:robot-operation" }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "@context": {
+    "@vocab": "https://schema.org/",
+    "sk": "https://skills.riverbend.example/skill/",
+    "rcc": "https://catalog.riverbend-cc.example/",
+    "wallet": "https://wallet.example/",
+    "competencyRequired": { "@type": "@id" }
+  },
+  "@id": "wallet:maria",
+  "@type": "Person",
+  "name": "Maria Alvarez",
+  "hasCredential": {
+    "@id": "rcc:credential-aas-mechatronics",
+    "@type": "EducationalOccupationalCredential",
+    "name": "AAS in Mechatronics",
+    "competencyRequired": ["sk:plc-programming", "sk:robot-operation"]
+  }
+}

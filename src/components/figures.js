@@ -16,25 +16,134 @@ export function indexQuads(quads) {
   return {label: (iri) => label.get(iri) ?? iri, types: (iri) => types.get(iri) ?? []};
 }
 
-/** A toggle made of plain text buttons; works with Framework's view(). */
-export function toggle(options, value = options[0].value) {
+/** An MD3 segmented button (single select); works with Framework's view(). */
+const CHECK = '<svg class="seg-check" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9.55 18 3.85 12.3l1.43-1.42 4.27 4.27 9.17-9.18 1.43 1.43Z" fill="currentColor"/></svg>';
+
+export function toggle(options, value = options[0].value, label = "Options") {
   const root = document.createElement("div");
-  root.className = "toggle";
+  root.className = "md-segmented";
+  root.setAttribute("role", "radiogroup");
+  root.setAttribute("aria-label", label);
   root.value = value;
   const buttons = options.map((o) => {
     const b = document.createElement("button");
     b.type = "button";
-    b.textContent = o.label;
-    b.setAttribute("aria-pressed", String(o.value === value));
+    b.setAttribute("role", "radio");
+    b.innerHTML = `${CHECK}<span>${o.label}</span>`;
+    const sync = () => {
+      const on = o.value === root.value;
+      b.setAttribute("aria-checked", String(on));
+      b.tabIndex = on ? 0 : -1;
+    };
+    b.sync = sync;
     b.onclick = () => {
       root.value = o.value;
-      buttons.forEach((x, i) => x.setAttribute("aria-pressed", String(options[i].value === o.value)));
+      buttons.forEach((x) => x.sync());
       root.dispatchEvent(new Event("input", {bubbles: true}));
+    };
+    b.onkeydown = (e) => {
+      const i = buttons.indexOf(b);
+      const j = e.key === "ArrowRight" ? i + 1 : e.key === "ArrowLeft" ? i - 1 : null;
+      if (j == null) return;
+      e.preventDefault();
+      const next = buttons[(j + buttons.length) % buttons.length];
+      next.click();
+      next.focus();
     };
     root.append(b);
     return b;
   });
+  buttons.forEach((b) => b.sync());
   return root;
+}
+
+/** Light syntax highlighting for Turtle and JSON-LD. */
+export function highlight(code, lang) {
+  const esc = (s) => s.replace(/[&<>]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;"})[c]);
+  const re =
+    lang === "turtle"
+      ? /(#[^\n]*)|("(?:[^"\\]|\\.)*"(?:@[a-z-]+)?)|(<[^>\s]*>)|(@prefix\b|\ba\b(?=\s))|([A-Za-z][\w-]*:[\w-]*)|(\d+)/g
+      : /("(?:[^"\\]|\\.)*")(\s*:)?|(\b\d+\b)/g;
+  let out = "", last = 0, m;
+  while ((m = re.exec(code))) {
+    out += esc(code.slice(last, m.index));
+    let cls;
+    if (lang === "turtle") cls = m[1] ? "tok-comment" : m[2] ? "tok-string" : m[3] || m[5] ? "tok-iri" : m[4] ? "tok-keyword" : "tok-number";
+    else cls = m[3] ? "tok-number" : m[2] ? (m[1].startsWith('"@') ? "tok-keyword" : "tok-key") : "tok-string";
+    if (lang !== "turtle" && m[2]) out += `<span class="${cls}">${esc(m[1])}</span>${esc(m[2])}`;
+    else out += `<span class="${cls}">${esc(m[0])}</span>`;
+    last = m.index + m[0].length;
+  }
+  return out + esc(code.slice(last));
+}
+
+/** A small RDF graph: one star per subject, joined where an object is described further down. */
+const CHAR = 6.9; // approximate advance of 11.5px Roboto Mono
+
+export function exampleGraph(triples, width) {
+  const rowH = 30;
+  const subjects = [...new Set(triples.map((t) => t.s))];
+  const text = (t) => (t.literal ? `“${t.o}”${t.lang ? "@" + t.lang : ""}` : t.o);
+  const leafWidth = (t) => (t.literal ? text(t).length * 7.4 + 24 : text(t).length * CHAR + 12);
+
+  let top = 32;
+  const stars = subjects.map((subject) => {
+    const rows = triples.filter((t) => t.s === subject);
+    const col = d3.max(rows, (t) => t.p.length) * CHAR + 40;
+    const star = {subject, x: 8, y: top, col, rows: rows.map((t, i) => ({...t, x: 8 + col, y: top + i * rowH}))};
+    star.width = 8 + col + d3.max(rows, leafWidth) + 8;
+    top += rows.length * rowH + 40;
+    return star;
+  });
+  const W = Math.max(width, d3.max(stars, (d) => d.width));
+  const H = top - 24;
+  const s = svg(W, H, `RDF graph of ${triples.length} triples`).style("max-width", null);
+
+  // Dashed connector: an object in one star is the subject of a later one
+  const leaves = stars.flatMap((st) => st.rows);
+  for (const st of stars.slice(1)) {
+    const leaf = leaves.find((r) => !r.literal && r.o === st.subject && r.y < st.y);
+    if (!leaf) continue;
+    s.append("path")
+      .attr("fill", "none")
+      .attr("stroke", "var(--md-outline)")
+      .attr("stroke-dasharray", "3 4")
+      .attr("d", `M${leaf.x},${leaf.y + 6} C${leaf.x},${st.y - 10} ${st.x},${leaf.y + 20} ${st.x},${st.y - 22}`);
+  }
+
+  for (const st of stars) {
+    const g = s.append("g");
+    g.append("g")
+      .attr("fill", "none")
+      .selectAll("path")
+      .data(st.rows)
+      .join("path")
+      .attr("stroke", "var(--md-outline)")
+      .attr("d", (r) => d3.linkHorizontal()({source: [st.x, st.y], target: [r.x - (r.literal ? 0 : 6), r.y]}));
+    g.append("g")
+      .selectAll("text")
+      .data(st.rows)
+      .join("text")
+      .attr("class", "mono")
+      .attr("x", (r) => r.x - 10)
+      .attr("y", (r) => r.y - 6)
+      .attr("text-anchor", "end")
+      .text((r) => r.p);
+    g.append("circle").attr("cx", st.x).attr("cy", st.y).attr("r", 5).attr("fill", "var(--md-primary)");
+    g.append("text").attr("class", "mono strong").attr("x", st.x - 4).attr("y", st.y - 20).text(st.subject);
+
+    const leaf = g.append("g").selectAll("g").data(st.rows).join("g").attr("transform", (r) => `translate(${r.x},${r.y})`);
+    leaf.filter((r) => !r.literal).append("circle").attr("r", 5).attr("fill", "var(--md-on-surface)");
+    leaf.filter((r) => !r.literal).append("text").attr("class", "mono").attr("x", 10).attr("dy", "0.35em").text(text);
+    const lit = leaf.filter((r) => r.literal);
+    lit.append("rect").attr("class", "lit-box").attr("y", -11).attr("height", 22).attr("rx", 6).attr("width", (r) => leafWidth(r) - 8);
+    lit.append("text").attr("class", "label").attr("x", 8).attr("dy", "0.35em").text(text);
+  }
+
+  const wrap = document.createElement("div");
+  wrap.className = "md-scroll";
+  wrap.append(s.node());
+  return wrap;
 }
 
 function svg(width, height, label) {
@@ -60,7 +169,7 @@ function arrowhead(s, id) {
     .attr("orient", "auto")
     .append("path")
     .attr("d", "M0,-3.5L8,0L0,3.5")
-    .attr("fill", "var(--muted)");
+    .attr("fill", "var(--md-on-surface-variant)");
 }
 
 /** Figure 1 — three facts chained into a path. */
@@ -111,7 +220,7 @@ export function chainFigure(width) {
       .attr("y1", narrow ? a.y + dir * gap : a.y)
       .attr("x2", narrow ? b.x : b.x - dir * gap)
       .attr("y2", narrow ? b.y - dir * gap : b.y)
-      .attr("stroke", "var(--muted)")
+      .attr("stroke", "var(--md-on-surface-variant)")
       .attr("marker-end", "url(#chain-arrow)");
     s.append("text")
       .attr("class", "mono")
@@ -122,7 +231,7 @@ export function chainFigure(width) {
   }
 
   const g = s.append("g").selectAll("g").data(nodes).join("g").attr("transform", (d, i) => `translate(${pos[i].x},${pos[i].y})`);
-  g.append("circle").attr("r", 5).attr("fill", (d) => (d.accent ? "var(--accent)" : "var(--ink)"));
+  g.append("circle").attr("r", 5).attr("fill", (d) => (d.accent ? "var(--md-primary)" : "var(--md-on-surface)"));
   g.append("text")
     .attr("x", narrow ? 0 : 0)
     .attr("y", narrow ? 0 : 26)
@@ -164,7 +273,7 @@ export function namesFigure(width) {
     .join("path")
     .attr("d", (d, i) => link(i))
     .attr("fill", "none")
-    .attr("stroke", "var(--accent)")
+    .attr("stroke", "var(--md-primary)")
     .attr("stroke-width", 1.25);
   paths.each(function () {
     const L = this.getTotalLength();
@@ -176,7 +285,7 @@ export function namesFigure(width) {
   rows.append("text").attr("class", "label").attr("y", 0).text((d) => `“${d.text}”`);
 
   const t = s.append("g").attr("transform", `translate(${target.x},${target.y})`);
-  const dot = t.append("circle").attr("r", 5).attr("fill", "var(--faint)");
+  const dot = t.append("circle").attr("r", 5).attr("fill", "var(--md-outline)");
   const title = t.append("text").attr("class", "label").attr("x", 14).attr("dy", "-0.2em");
   const sub = t.append("text").attr("class", "mono").attr("x", 14).attr("dy", "1.2em");
 
@@ -191,7 +300,7 @@ export function namesFigure(width) {
       .attr("stroke-dashoffset", function () {
         return on ? 0 : this.getTotalLength();
       });
-    dot.transition().duration(400).attr("fill", on ? "var(--accent)" : "var(--faint)");
+    dot.transition().duration(400).attr("fill", on ? "var(--md-primary)" : "var(--md-outline)");
     title.text(on ? "PLC Programming" : "No match");
     sub.text(on ? "sk:plc-programming" : "four unrelated strings");
   };
@@ -346,7 +455,7 @@ export function mergeFigure({quads, index, panels, width}) {
         (x) => x.transition().duration(250).attr("opacity", 0).remove()
       )
       .attr("d", (d) => curve(d.a, d.b))
-      .attr("stroke", (d) => (d.hot ? "var(--accent)" : "var(--rule-strong)"))
+      .attr("stroke", (d) => (d.hot ? "var(--md-primary)" : "var(--md-outline)"))
       .attr("stroke-width", (d) => (d.hot ? 1.5 : 1))
       .transition()
       .delay(merged ? 650 : 450)
@@ -397,7 +506,7 @@ export function mergeFigure({quads, index, panels, width}) {
       .select("circle")
       .attr("r", (d) => (d.role === "skill" ? 3.5 : 5))
       .attr("fill", (d) =>
-        d.role !== "skill" ? "var(--ink)" : merged ? (held.has(d.iri) && wanted.has(d.iri) ? "var(--accent)" : "var(--faint)") : count.get(d.iri) > 1 ? "var(--accent)" : "var(--faint)"
+        d.role !== "skill" ? "var(--md-on-surface)" : merged ? (held.has(d.iri) && wanted.has(d.iri) ? "var(--md-primary)" : "var(--md-outline)") : count.get(d.iri) > 1 ? "var(--md-primary)" : "var(--md-outline)"
       );
     node
       .select("text")
@@ -428,4 +537,45 @@ const SHORT = {
 function short(label) {
   const s = SHORT[label] ?? label;
   return s.length > 22 ? s.slice(0, 21) + "…" : s;
+}
+
+/** n organizations wired point-to-point, or each wired once to a shared vocabulary. */
+export function networkMini(n, mode, size = 220) {
+  const c = size / 2, R = size * 0.42;
+  const s = svg(
+    size,
+    size,
+    mode === "p2p"
+      ? `${n} organizations connected pairwise by ${(n * (n - 1)) / 2} custom mappings`
+      : `${n} organizations each mapped once to a shared vocabulary`
+  );
+  const pts = d3.range(n).map((i) => {
+    const a = -Math.PI / 2 + (i / n) * 2 * Math.PI;
+    return [c + R * Math.cos(a), c + R * Math.sin(a)];
+  });
+  const edges = [];
+  if (mode === "p2p") for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) edges.push([pts[i], pts[j]]);
+  else for (const p of pts) edges.push([p, [c, c]]);
+  const color = mode === "p2p" ? "var(--md-tertiary)" : "var(--md-primary)";
+  s.append("g")
+    .selectAll("line")
+    .data(edges)
+    .join("line")
+    .attr("x1", (e) => e[0][0])
+    .attr("y1", (e) => e[0][1])
+    .attr("x2", (e) => e[1][0])
+    .attr("y2", (e) => e[1][1])
+    .attr("stroke", color)
+    .attr("stroke-opacity", mode === "p2p" ? Math.max(0.2, Math.min(0.8, 24 / edges.length)) : 0.8)
+    .attr("stroke-width", 1);
+  if (mode !== "p2p") s.append("circle").attr("cx", c).attr("cy", c).attr("r", 7).attr("fill", "var(--md-primary)");
+  s.append("g")
+    .selectAll("circle")
+    .data(pts)
+    .join("circle")
+    .attr("cx", (p) => p[0])
+    .attr("cy", (p) => p[1])
+    .attr("r", Math.max(2.5, Math.min(5, 50 / n)))
+    .attr("fill", "var(--md-on-surface)");
+  return s.node();
 }

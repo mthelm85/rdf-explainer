@@ -1,0 +1,14 @@
+{
+  "@context": {
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "sk": "https://skills.riverbend.example/skill/",
+    "prefLabel": { "@id": "skos:prefLabel", "@language": "en" },
+    "altLabel": { "@id": "skos:altLabel", "@language": "en" },
+    "broader": { "@id": "skos:broader", "@type": "@id" }
+  },
+  "@id": "sk:plc-programming",
+  "@type": "skos:Concept",
+  "prefLabel": "PLC Programming",
+  "altLabel": ["ladder logic", "programmable controllers"],
+  "broader": "sk:industrial-automation"
+}
