@@ -1,0 +1,245 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  The Riverbend regional talent ecosystem — a fictional example dataset.
+#
+#  Every publisher keeps its own data in its own named graph (TriG syntax).
+#  Nobody coordinated a database schema. They agreed on only two things:
+#    1. shared vocabularies (schema.org, SKOS, CTDL), and
+#    2. a shared regional skills framework, identified by IRIs.
+#  That is enough for the graphs to snap together when they are merged.
+#
+#  All organizations, people and *.example IRIs are invented for illustration.
+#  Occupation codes follow the O*NET-SOC format and are illustrative.
+# ─────────────────────────────────────────────────────────────────────────────
+
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix schema:  <https://schema.org/> .
+@prefix ceterms: <https://purl.org/ctdl/terms/> .
+@prefix sk:      <https://skills.riverbend.example/skill/> .
+@prefix rwb:     <https://skills.riverbend.example/> .
+@prefix acme:    <https://jobs.acme-robotics.example/> .
+@prefix north:   <https://jobs.northgate-electric.example/> .
+@prefix rcc:     <https://catalog.riverbend-cc.example/> .
+@prefix mea:     <https://apprentice.midstate-electrical.example/> .
+@prefix wallet:  <https://wallet.example/> .
+
+# ── 1. The regional skills framework (published by the workforce board) ─────
+rwb:graph {
+  rwb:org a schema:GovernmentOrganization ;
+    schema:name "Riverbend Workforce Board" .
+
+  sk:framework a skos:ConceptScheme ;
+    skos:prefLabel "Riverbend Regional Skills Framework"@en ;
+    schema:publisher rwb:org .
+
+  sk:industrial-automation a skos:Concept ; skos:inScheme sk:framework ;
+    skos:prefLabel "Industrial Automation"@en .
+  sk:electrical-systems a skos:Concept ; skos:inScheme sk:framework ;
+    skos:prefLabel "Electrical Systems"@en .
+  sk:digital-data a skos:Concept ; skos:inScheme sk:framework ;
+    skos:prefLabel "Digital & Data"@en .
+  sk:foundational a skos:Concept ; skos:inScheme sk:framework ;
+    skos:prefLabel "Foundational Skills"@en .
+
+  sk:plc-programming a skos:Concept ; skos:inScheme sk:framework ;
+    skos:prefLabel "PLC Programming"@en ;
+    skos:altLabel "ladder logic"@en, "programmable logic controllers"@en, "PLCs"@en ;
+    skos:broader sk:industrial-automation .
+  sk:robot-operation a skos:Concept ; skos:inScheme sk:framework ;
+    skos:prefLabel "Industrial Robot Operation"@en ;
+    skos:altLabel "robot programming"@en, "FANUC robot operation"@en ;
+    skos:broader sk:industrial-automation .
+  sk:sensors-instrumentation a skos:Concept ; skos:inScheme sk:framework ;
+    skos:prefLabel "Sensors & Instrumentation"@en ;
+    skos:altLabel "instrumentation"@en, "sensors"@en ;
+    skos:broader sk:industrial-automation .
+  sk:hydraulics-pneumatics a skos:Concept ; skos:inScheme sk:framework ;
+    skos:prefLabel "Hydraulics & Pneumatics"@en ;
+    skos:altLabel "fluid power"@en ;
+    skos:broader sk:industrial-automation .
+  sk:motor-controls a skos:Concept ; skos:inScheme sk:framework ;
+    skos:prefLabel "Motor Controls"@en ;
+    skos:altLabel "motor control circuits"@en ;
+    skos:broader sk:industrial-automation, sk:electrical-systems .
+  sk:electrical-safety a skos:Concept ; skos:inScheme sk:framework ;
+    skos:prefLabel "Electrical Safety"@en ;
+    skos:altLabel "NFPA 70E"@en, "arc flash safety"@en ;
+    skos:broader sk:electrical-systems .
+  sk:wiring a skos:Concept ; skos:inScheme sk:framework ;
+    skos:prefLabel "Wiring Methods"@en ;
+    skos:altLabel "conduit bending & wiring"@en ;
+    skos:broader sk:electrical-systems .
+  sk:python a skos:Concept ; skos:inScheme sk:framework ;
+    skos:prefLabel "Python Programming"@en ;
+    skos:altLabel "Python"@en, "Python scripting"@en ;
+    skos:broader sk:digital-data .
+  sk:sql a skos:Concept ; skos:inScheme sk:framework ;
+    skos:prefLabel "SQL & Databases"@en ;
+    skos:altLabel "SQL queries"@en, "database fundamentals"@en ;
+    skos:broader sk:digital-data .
+  sk:data-analysis a skos:Concept ; skos:inScheme sk:framework ;
+    skos:prefLabel "Data Analysis"@en ;
+    skos:altLabel "Excel / data analysis"@en ;
+    skos:broader sk:digital-data .
+  sk:blueprint-reading a skos:Concept ; skos:inScheme sk:framework ;
+    skos:prefLabel "Blueprint & Schematic Reading"@en ;
+    skos:altLabel "print reading"@en, "read schematics"@en ;
+    skos:broader sk:foundational .
+  sk:troubleshooting a skos:Concept ; skos:inScheme sk:framework ;
+    skos:prefLabel "Systematic Troubleshooting"@en ;
+    skos:altLabel "troubleshooting"@en ;
+    skos:broader sk:foundational .
+  sk:teamwork a skos:Concept ; skos:inScheme sk:framework ;
+    skos:prefLabel "Team Communication"@en ;
+    skos:altLabel "teamwork"@en, "communication"@en ;
+    skos:broader sk:foundational .
+}
+
+# ── 2. Employer: Acme Robotics (from its applicant-tracking system) ──────────
+acme:graph {
+  acme:org a schema:Organization ;
+    schema:name "Acme Robotics" ;
+    schema:naics "333249" .
+
+  acme:job-automation-technician a schema:JobPosting ;
+    schema:title "Automation Technician" ;
+    schema:hiringOrganization acme:org ;
+    schema:datePosted "2026-09-14"^^xsd:date ;
+    schema:employmentType "FULL_TIME" ;
+    schema:baseSalary 68000 ;
+    schema:occupationalCategory "17-3024.01" ;
+    schema:skills sk:plc-programming, sk:robot-operation, sk:sensors-instrumentation,
+                  sk:troubleshooting, sk:electrical-safety, sk:blueprint-reading .
+
+  acme:job-data-technician a schema:JobPosting ;
+    schema:title "Manufacturing Data Technician" ;
+    schema:hiringOrganization acme:org ;
+    schema:datePosted "2026-09-20"^^xsd:date ;
+    schema:employmentType "FULL_TIME" ;
+    schema:baseSalary 64000 ;
+    schema:skills sk:python, sk:sql, sk:data-analysis, sk:sensors-instrumentation,
+                  sk:troubleshooting .
+
+  acme:job-robot-cell-operator a schema:JobPosting ;
+    schema:title "Robot Cell Operator" ;
+    schema:hiringOrganization acme:org ;
+    schema:datePosted "2026-09-22"^^xsd:date ;
+    schema:employmentType "FULL_TIME" ;
+    schema:baseSalary 47000 ;
+    schema:skills sk:robot-operation, sk:electrical-safety, sk:troubleshooting, sk:teamwork .
+}
+
+# ── 3. Employer: Northgate Electric ───────────────────────────────────────────
+north:graph {
+  north:org a schema:Organization ;
+    schema:name "Northgate Electric" ;
+    schema:naics "238210" .
+
+  north:job-industrial-electrician a schema:JobPosting ;
+    schema:title "Industrial Electrician" ;
+    schema:hiringOrganization north:org ;
+    schema:datePosted "2026-09-10"^^xsd:date ;
+    schema:employmentType "FULL_TIME" ;
+    schema:baseSalary 74000 ;
+    schema:occupationalCategory "47-2111.00" ;
+    schema:skills sk:wiring, sk:motor-controls, sk:electrical-safety, sk:blueprint-reading,
+                  sk:plc-programming, sk:troubleshooting .
+
+  north:job-controls-technician a schema:JobPosting ;
+    schema:title "Controls Technician" ;
+    schema:hiringOrganization north:org ;
+    schema:datePosted "2026-09-25"^^xsd:date ;
+    schema:employmentType "FULL_TIME" ;
+    schema:baseSalary 71000 ;
+    schema:skills sk:plc-programming, sk:motor-controls, sk:sensors-instrumentation,
+                  sk:troubleshooting, sk:teamwork .
+}
+
+# ── 4. Education: Riverbend Community College (from its course catalog) ─────
+rcc:graph {
+  rcc:org a schema:CollegeOrUniversity ;
+    schema:name "Riverbend Community College" .
+
+  rcc:program-aas-mechatronics a schema:EducationalOccupationalProgram ;
+    schema:name "AAS in Mechatronics" ;
+    schema:provider rcc:org ;
+    schema:timeToComplete "P2Y"^^xsd:duration ;
+    schema:teaches sk:plc-programming, sk:robot-operation, sk:sensors-instrumentation,
+                   sk:hydraulics-pneumatics, sk:blueprint-reading, sk:troubleshooting,
+                   sk:electrical-safety ;
+    schema:educationalCredentialAwarded rcc:credential-aas-mechatronics .
+
+  rcc:credential-aas-mechatronics a schema:EducationalOccupationalCredential, ceterms:AssociateDegree ;
+    schema:name "Associate of Applied Science in Mechatronics" ;
+    ceterms:ctid "ce-5d3c1a2e-7b8f-4c61-9a0e-2f4b6d8e1c3a" ;
+    schema:recognizedBy rcc:org ;
+    schema:competencyRequired sk:plc-programming, sk:robot-operation, sk:sensors-instrumentation,
+                              sk:hydraulics-pneumatics, sk:blueprint-reading, sk:troubleshooting,
+                              sk:electrical-safety .
+
+  rcc:program-industrial-data a schema:EducationalOccupationalProgram ;
+    schema:name "Industrial Data Analytics Certificate" ;
+    schema:provider rcc:org ;
+    schema:timeToComplete "P6M"^^xsd:duration ;
+    schema:teaches sk:python, sk:sql, sk:data-analysis ;
+    schema:educationalCredentialAwarded rcc:credential-industrial-data .
+
+  rcc:credential-industrial-data a schema:EducationalOccupationalCredential, ceterms:Certificate ;
+    schema:name "Certificate in Industrial Data Analytics" ;
+    schema:recognizedBy rcc:org ;
+    schema:competencyRequired sk:python, sk:sql, sk:data-analysis .
+
+  rcc:program-robotics-fundamentals a schema:EducationalOccupationalProgram ;
+    schema:name "Industrial Robotics Fundamentals (8 weeks)" ;
+    schema:provider rcc:org ;
+    schema:timeToComplete "P8W"^^xsd:duration ;
+    schema:teaches sk:robot-operation, sk:electrical-safety ;
+    schema:educationalCredentialAwarded rcc:credential-robotics-badge .
+
+  rcc:credential-robotics-badge a schema:EducationalOccupationalCredential, ceterms:DigitalBadge ;
+    schema:name "Robotics Fundamentals Badge" ;
+    schema:recognizedBy rcc:org ;
+    schema:competencyRequired sk:robot-operation, sk:electrical-safety .
+}
+
+# ── 5. Apprenticeship: Midstate Electrical Joint Apprenticeship Program ─────
+mea:graph {
+  mea:org a schema:Organization ;
+    schema:name "Midstate Electrical Apprenticeship" .
+
+  mea:program-inside-wireman a schema:EducationalOccupationalProgram ;
+    schema:name "Inside Wireman Registered Apprenticeship" ;
+    schema:provider mea:org ;
+    schema:timeToComplete "P5Y"^^xsd:duration ;
+    schema:teaches sk:wiring, sk:motor-controls, sk:electrical-safety, sk:blueprint-reading,
+                   sk:plc-programming, sk:troubleshooting ;
+    schema:educationalCredentialAwarded mea:credential-journeyworker .
+
+  mea:credential-journeyworker a schema:EducationalOccupationalCredential, ceterms:ApprenticeshipCertificate ;
+    schema:name "Journeyworker Electrician Certificate" ;
+    schema:recognizedBy mea:org ;
+    schema:competencyRequired sk:wiring, sk:motor-controls, sk:electrical-safety,
+                              sk:blueprint-reading, sk:plc-programming, sk:troubleshooting .
+}
+
+# ── 6. Workers: each person's learning & employment record, in their own wallet ─
+wallet:maria-graph {
+  wallet:maria a schema:Person ;
+    schema:name "Maria Alvarez" ;
+    schema:hasCredential rcc:credential-aas-mechatronics ;
+    schema:knowsAbout sk:python .
+}
+
+wallet:jordan-graph {
+  wallet:jordan a schema:Person ;
+    schema:name "Jordan Lee" ;
+    schema:hasCredential mea:credential-journeyworker .
+}
+
+wallet:sam-graph {
+  wallet:sam a schema:Person ;
+    schema:name "Sam Okafor" ;
+    schema:knowsAbout sk:teamwork, sk:data-analysis .
+}

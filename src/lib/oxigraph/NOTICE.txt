@@ -1,0 +1,3 @@
+Vendored from the npm package "oxigraph" v0.5.11 (web build: web.js, web_bg.wasm, web.d.ts).
+https://github.com/oxigraph/oxigraph — dual-licensed MIT OR Apache-2.0.
+To update: npm pack oxigraph, extract, and copy package/web.js, package/web_bg.wasm, package/web.d.ts here.
