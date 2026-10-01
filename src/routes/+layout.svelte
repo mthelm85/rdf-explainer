@@ -1,6 +1,6 @@
 <script>
 	import '../app.css';
-	import favicon from '#lib/assets/favicon.svg';
+	import favicon from '#lib/assets/favicon.ico';
 	import { SECTIONS } from '#lib/sections.js';
 
 	let { children } = $props();

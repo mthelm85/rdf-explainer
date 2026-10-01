@@ -65,7 +65,8 @@ export function exampleGraph(triples, width) {
     if (!leaf) continue;
     s.append("path")
       .attr("fill", "none")
-      .attr("stroke", "var(--faint)")
+      .attr("stroke", "var(--edge)")
+      .attr("stroke-width", 1.25)
       .attr("stroke-dasharray", "3 4")
       .attr("d", `M${leaf.x},${leaf.y + 6} C${leaf.x},${st.y - 10} ${st.x},${leaf.y + 20} ${st.x},${st.y - 22}`);
   }
@@ -77,7 +78,8 @@ export function exampleGraph(triples, width) {
       .selectAll("path")
       .data(st.rows)
       .join("path")
-      .attr("stroke", "var(--faint)")
+      .attr("stroke", "var(--edge)")
+      .attr("stroke-width", 1.25)
       .attr("d", (r) => d3.linkHorizontal()({source: [st.x, st.y], target: [r.x - (r.literal ? 0 : 6), r.y]}));
     g.append("g")
       .selectAll("text")
@@ -123,8 +125,8 @@ function arrowhead(s, id) {
     .attr("id", id)
     .attr("viewBox", "0 -4 8 8")
     .attr("refX", 8)
-    .attr("markerWidth", 6)
-    .attr("markerHeight", 6)
+    .attr("markerWidth", 4)
+    .attr("markerHeight", 4)
     .attr("orient", "auto")
     .append("path")
     .attr("d", "M0,-3.5L8,0L0,3.5")
@@ -177,6 +179,7 @@ export function chainFigure(width) {
 
   const line = s.append("g").selectAll("line").data(edges).join("line")
     .attr("stroke", "var(--muted)")
+    .attr("stroke-width", 1.5)
     .attr("marker-end", "url(#chain-arrow)");
   const edgeLabel = s.append("g").selectAll("text").data(edges).join("text")
     .attr("class", "mono")
@@ -289,7 +292,7 @@ export function namesFigure(width) {
     .attr("d", (d, i) => link(i))
     .attr("fill", "none")
     .attr("stroke", "var(--accent)")
-    .attr("stroke-width", 1.25);
+    .attr("stroke-width", 1.5);
   paths.each(function () {
     const L = this.getTotalLength();
     d3.select(this).attr("stroke-dasharray", `${L} ${L}`).attr("stroke-dashoffset", L);
@@ -504,13 +507,13 @@ export function mergeFigure({quads, index, panels, width}) {
             .attr("opacity", 0)
             .remove()
       )
-      .attr("stroke", (d) => (d.hot ? "var(--accent)" : "var(--faint)"))
-      .attr("stroke-width", (d) => (d.hot ? 1.5 : 1))
+      .attr("stroke", (d) => (d.hot ? "var(--accent)" : merged ? "var(--edge-light)" : "var(--edge)"))
+      .attr("stroke-width", (d) => (d.hot ? 1.75 : 1.25))
       .transition()
       .duration(DURATION)
       .ease(ease)
       .attrTween("d", travel(start, (n) => n))
-      .attr("opacity", (d) => (merged && !d.hot ? 0.5 : 1));
+      .attr("opacity", 1);
 
     const labelFor = (d) => (d.role === "skill" && (!merged || narrow) ? "" : short(index.label(d.iri)));
     const node = gNodes
@@ -607,9 +610,8 @@ export function networkMini(n, mode, size = 220) {
     .attr("y1", (e) => e[0][1])
     .attr("x2", (e) => e[1][0])
     .attr("y2", (e) => e[1][1])
-    .attr("stroke", color)
-    .attr("stroke-opacity", mode === "p2p" ? Math.max(0.2, Math.min(0.8, 24 / edges.length)) : 0.8)
-    .attr("stroke-width", 1);
+    .attr("stroke", mode === "p2p" ? `color-mix(in srgb, ${color} ${Math.round(Math.max(35, Math.min(80, 1600 / edges.length)))}%, var(--bg))` : color)
+    .attr("stroke-width", mode === "p2p" ? 1 : 1.5);
   if (mode !== "p2p") s.append("circle").attr("cx", c).attr("cy", c).attr("r", 7).attr("fill", "var(--accent)");
   s.append("g")
     .selectAll("circle")

@@ -42,6 +42,7 @@
 	// ── Keyword vs. linked matching ──────────────────────────────────────────
 	let worker = $state('https://wallet.example/maria');
 	let by = $state('wording');
+	let selected = $state(0);
 	const S = 'https://schema.org/';
 	const out = $derived(d3.group(quads, (q) => q.s));
 	/** @param {string} s @param {string} p */
@@ -63,12 +64,13 @@
 			.filter((s) => index.types(s).includes(S + 'JobPosting'))
 			.map((job) => {
 				const skills = objs(job, 'skills').map((iri) => {
-					const posting = PHRASING[sourceOf(job)]?.[local(iri)];
+					const posting = PHRASING[sourceOf(job)]?.[local(iri)] ?? index.label(iri);
+					const evidence = has.get(iri);
 					return {
 						iri,
-						name: index.label(iri),
+						curie: `sk:${local(iri)}`,
 						posting,
-						evidence: has.get(iri),
+						evidence,
 						linked: has.has(iri),
 						keyword: words.has(norm(posting))
 					};
@@ -83,19 +85,14 @@
 			})
 			.sort((a, b) => b.linked / b.skills.length - a.linked / a.skills.length);
 	});
+	const job = $derived(jobs[Math.min(selected, jobs.length - 1)]);
 	const totals = $derived({
 		required: d3.sum(jobs, (j) => j.skills.length),
 		keyword: d3.sum(jobs, (j) => j.keyword),
 		linked: d3.sum(jobs, (j) => j.linked)
 	});
-
-	/** @param {{ name: string, posting?: string, evidence?: string, linked: boolean, keyword: boolean }} d */
-	function why(d) {
-		const posting = `Posting says “${d.posting ?? d.name}”.`;
-		if (!d.linked) return `${posting} ${firstName} has no evidence of this skill.`;
-		const evidence = ` ${firstName}’s record says “${d.evidence ?? d.name}”.`;
-		return d.keyword ? posting + evidence + ' The words match.' : posting + evidence + ' Different words, same skill IRI.';
-	}
+	/** @param {{ linked: boolean, keyword: boolean }} d */
+	const matched = (d) => (by === 'iri' ? d.linked : d.keyword);
 </script>
 
 <h2 id="why">Why it matters</h2>
@@ -150,9 +147,15 @@
 <h3 id="matching">Fewer missed matches</h3>
 
 <p>
-	Shared names change that. Here is the same region with the same people, jobs and skills. Each
-	job lists the skills it requires; a filled skill is one the worker can show. Compare matching by
-	each organization’s own wording with matching by shared skill IRIs.
+	Most matching today compares words. A job posting asks for “Ladder logic”; a college credential
+	certifies “PLC Programming”. To a person they are the same skill. To software comparing text, they
+	are not.
+</p>
+
+<p>
+	With RDF, each organization still uses its own words, but also links each skill to an IRI in a
+	shared skills framework. Software can then compare the IRIs instead of the words. Pick a worker
+	and a job, and compare the two methods.
 </p>
 
 <div class="controls">
@@ -165,48 +168,84 @@
 		bind:value={worker}
 		label="Worker"
 	/>
-	<Toggle
-		options={[
-			{ value: 'wording', label: 'Match by wording' },
-			{ value: 'iri', label: 'Match by shared IRI' }
-		]}
-		bind:value={by}
-		label="Matching method"
-	/>
 </div>
 
-<figure class="jobs">
-	{#each jobs as job (job.title)}
-		{@const n = by === 'iri' ? job.linked : job.keyword}
-		<div class="job">
-			<div class="job-head">
-				<span class="job-title">{job.title}</span>
-				<span class="job-meta">{job.employer}</span>
-				<span class="job-count">{n} of {job.skills.length}</span>
+<table class="summary">
+	<thead>
+		<tr>
+			<th scope="col">Job</th>
+			<th scope="col" class="num">Matched by wording</th>
+			<th scope="col" class="num">Matched by IRI</th>
+		</tr>
+	</thead>
+	<tbody>
+		{#each jobs as j, i (j.title)}
+			<tr class:current={i === selected}>
+				<td>
+					<button type="button" onclick={() => (selected = i)} aria-pressed={i === selected}>
+						{j.title}
+					</button>
+					<span class="muted">{j.employer}</span>
+				</td>
+				<td class="num">{j.keyword} of {j.skills.length}</td>
+				<td class="num strong">{j.linked} of {j.skills.length}</td>
+			</tr>
+		{/each}
+	</tbody>
+	<tfoot>
+		<tr>
+			<td>All jobs</td>
+			<td class="num">{totals.keyword} of {totals.required}</td>
+			<td class="num strong">{totals.linked} of {totals.required}</td>
+		</tr>
+	</tfoot>
+</table>
+
+<Toggle
+	options={[
+		{ value: 'wording', label: 'Compare wording' },
+		{ value: 'iri', label: 'Compare IRIs' }
+	]}
+	bind:value={by}
+	label="Matching method"
+/>
+
+<figure class="compare" data-by={by}>
+	<div class="row head">
+		<div>{job.title} asks for</div>
+		<div></div>
+		<div>{firstName}’s record shows</div>
+	</div>
+	{#each job.skills as d (d.iri)}
+		<div class="row" class:match={matched(d)}>
+			<div class="term">
+				<span class="words">“{d.posting}”</span>
+				<code class="iri">{d.curie}</code>
 			</div>
-			<ul class="skills" aria-label="Skills required for {job.title}">
-				{#each job.skills as d (d.iri)}
-					{@const on = by === 'iri' ? d.linked : d.keyword}
-					<li
-						class:on
-						class:found={by === 'iri' && d.linked && !d.keyword}
-						title={why(d)}
-					>
-						{d.name}<span class="sr-only">{on ? ': matched' : ': not matched'}</span>
-					</li>
-				{/each}
-			</ul>
+			<div class="link" aria-hidden="true"><span></span></div>
+			<div class="term">
+				{#if d.linked}
+					<span class="words">“{d.evidence ?? d.posting}”</span>
+					<code class="iri">{d.curie}</code>
+				{:else}
+					<span class="none">no evidence</span>
+				{/if}
+			</div>
+			<span class="sr-only">{matched(d) ? 'Match' : 'No match'}</span>
 		</div>
 	{/each}
 	<figcaption class="caption">
 		{#if by === 'wording'}
-			Matching on wording finds <strong>{totals.keyword}</strong> of {totals.required} required skills
-			for {firstName}. Switch to shared IRIs to see what it misses.
+			Comparing wording finds <strong>{job.keyword} of {job.skills.length}</strong> skills for this
+			job. Only identical text counts, so “Ladder logic” and “PLC Programming” don’t match.
 		{:else}
-			Matching on shared IRIs finds <strong>{totals.linked}</strong> of {totals.required}, including
-			<strong>{totals.linked - totals.keyword}</strong> that wording missed (outlined in blue). Hover a skill to
-			see both phrasings.
+			Comparing IRIs finds <strong>{job.linked} of {job.skills.length}</strong>. Different words that
+			point to the same IRI now match, with no guessing.
+			{#if job.linked < job.skills.length}
+				The rest are skills {firstName} genuinely can’t show yet.
+			{/if}
 		{/if}
+		IRIs are shortened: <code>sk:</code> stands for <code>https://skills.riverbend.example/skill/</code>.
 	</figcaption>
 </figure>
 
@@ -276,74 +315,178 @@
 		column-gap: 2.5rem;
 	}
 
-	.jobs {
-		margin-top: 0.5rem;
+	/* Summary table */
+	.summary {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.85rem;
+		margin: 0.5rem 0 1rem;
 	}
 
-	.job {
-		padding: 0.9rem 0;
-		border-top: 1px solid var(--rule);
+	.summary th {
+		text-align: left;
+		font-weight: 500;
+		color: var(--muted);
+		border-bottom: 1px solid var(--rule);
+		padding: 0 0 6px;
 	}
 
-	.job-head {
-		display: flex;
-		align-items: baseline;
-		gap: 0.6rem;
-		margin-bottom: 0.5rem;
-		font-size: 0.9rem;
+	.summary td {
+		padding: 6px 0;
+		border-bottom: 1px solid var(--rule);
 	}
 
-	.job-title {
+	.summary tfoot td {
+		border-bottom: 0;
+		color: var(--muted);
+	}
+
+	.summary .num {
+		text-align: right;
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+		padding-left: 1rem;
+	}
+
+	.summary .strong {
+		color: var(--accent);
 		font-weight: 600;
 	}
 
-	.job-meta {
+	.summary .muted {
 		color: var(--muted);
-		font-size: 0.8rem;
-	}
-
-	.job-count {
-		margin-left: auto;
-		font-variant-numeric: tabular-nums;
-		color: var(--muted);
-		font-size: 0.8rem;
-	}
-
-	.skills {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 6px;
-		list-style: none;
-		margin: 0;
-		padding: 0;
-	}
-
-	.skills li {
 		font-size: 0.78rem;
-		line-height: 1;
-		padding: 6px 9px;
-		border-radius: 999px;
-		border: 1px solid var(--rule);
+		margin-left: 0.4rem;
+	}
+
+	.summary button {
+		appearance: none;
+		background: none;
+		border: 0;
+		padding: 0;
+		font: inherit;
+		color: var(--ink);
+		cursor: pointer;
+		text-decoration: underline;
+		text-decoration-color: var(--rule);
+		text-underline-offset: 3px;
+		text-align: left;
+	}
+
+	@media (max-width: 560px) {
+		.summary .muted {
+			display: block;
+			margin-left: 0;
+		}
+	}
+
+	.summary tr.current button {
+		font-weight: 600;
+		text-decoration-color: var(--ink);
+	}
+
+	/* Side-by-side comparison */
+	.compare {
+		margin-top: 0.5rem;
+	}
+
+	.row {
+		display: grid;
+		grid-template-columns: 1fr minmax(48px, 0.5fr) 1fr;
+		align-items: center;
+		padding: 8px 0;
+		border-top: 1px solid var(--rule);
+		position: relative;
+	}
+
+	.row.head {
+		border-top: 0;
+		font-size: 0.8rem;
 		color: var(--muted);
-		background: var(--bg);
-		cursor: default;
+		padding-bottom: 6px;
+	}
+
+	.row > .term:last-of-type,
+	.row.head > div:last-child {
+		text-align: left;
+		padding-left: 4px;
+	}
+
+	.row > .term:first-child,
+	.row.head > div:first-child {
+		text-align: right;
+		padding-right: 4px;
+	}
+
+	.term {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
+	}
+
+	.row > .term:first-child {
+		align-items: flex-end;
+	}
+
+	.words,
+	.iri {
 		transition:
-			background-color 300ms ease,
-			color 300ms ease,
-			border-color 300ms ease,
-			box-shadow 300ms ease;
+			color 250ms ease,
+			opacity 250ms ease;
 	}
 
-	.skills li.on {
+	.words {
+		font-size: 0.92rem;
+	}
+
+	.iri {
+		font-size: 0.76rem;
+		overflow-wrap: anywhere;
+	}
+
+	.none {
+		font-size: 0.85rem;
+		color: var(--muted);
+		font-style: italic;
+	}
+
+	/* Emphasize whatever is being compared */
+	[data-by='wording'] .words {
+		color: var(--ink);
+	}
+	[data-by='wording'] .iri {
+		color: var(--muted);
+		opacity: 0.6;
+	}
+	[data-by='iri'] .words {
+		color: var(--muted);
+	}
+	[data-by='iri'] .iri {
+		color: var(--accent);
+		opacity: 1;
+		font-weight: 600;
+	}
+
+	/* The connector between the two sides */
+	.link {
+		height: 2px;
+		margin: 0 8px;
+		position: relative;
+	}
+
+	.link span {
+		position: absolute;
+		inset: 0;
 		background: var(--accent);
-		border-color: var(--accent);
-		color: #fff;
+		transform: scaleX(0);
+		transform-origin: left;
+		transition: transform 400ms cubic-bezier(0.2, 0, 0, 1);
+		border-radius: 2px;
 	}
 
-	.skills li.found {
-		box-shadow:
-			0 0 0 2px var(--bg),
-			0 0 0 3.5px var(--accent);
+	.row.match .link span {
+		transform: scaleX(1);
 	}
 
 	.sr-only {
@@ -356,8 +499,24 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.skills li {
+		.link span,
+		.words,
+		.iri {
 			transition: none;
+		}
+	}
+
+	@media (max-width: 560px) {
+		.row {
+			grid-template-columns: 1fr 28px 1fr;
+		}
+
+		.words {
+			font-size: 0.82rem;
+		}
+
+		.iri {
+			font-size: 0.7rem;
 		}
 	}
 </style>
