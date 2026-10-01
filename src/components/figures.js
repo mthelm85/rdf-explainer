@@ -16,47 +16,6 @@ export function indexQuads(quads) {
   return {label: (iri) => label.get(iri) ?? iri, types: (iri) => types.get(iri) ?? []};
 }
 
-/** An MD3 segmented button (single select); works with Framework's view(). */
-const CHECK = '<svg class="seg-check" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9.55 18 3.85 12.3l1.43-1.42 4.27 4.27 9.17-9.18 1.43 1.43Z" fill="currentColor"/></svg>';
-
-export function toggle(options, value = options[0].value, label = "Options") {
-  const root = document.createElement("div");
-  root.className = "md-segmented";
-  root.setAttribute("role", "radiogroup");
-  root.setAttribute("aria-label", label);
-  root.value = value;
-  const buttons = options.map((o) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.setAttribute("role", "radio");
-    b.innerHTML = `${CHECK}<span>${o.label}</span>`;
-    const sync = () => {
-      const on = o.value === root.value;
-      b.setAttribute("aria-checked", String(on));
-      b.tabIndex = on ? 0 : -1;
-    };
-    b.sync = sync;
-    b.onclick = () => {
-      root.value = o.value;
-      buttons.forEach((x) => x.sync());
-      root.dispatchEvent(new Event("input", {bubbles: true}));
-    };
-    b.onkeydown = (e) => {
-      const i = buttons.indexOf(b);
-      const j = e.key === "ArrowRight" ? i + 1 : e.key === "ArrowLeft" ? i - 1 : null;
-      if (j == null) return;
-      e.preventDefault();
-      const next = buttons[(j + buttons.length) % buttons.length];
-      next.click();
-      next.focus();
-    };
-    root.append(b);
-    return b;
-  });
-  buttons.forEach((b) => b.sync());
-  return root;
-}
-
 /** Light syntax highlighting for Turtle and JSON-LD. */
 export function highlight(code, lang) {
   const esc = (s) => s.replace(/[&<>]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;"})[c]);
@@ -141,14 +100,26 @@ export function exampleGraph(triples, width) {
   }
 
   const wrap = document.createElement("div");
-  wrap.className = "md-scroll";
+  wrap.style.overflowX = "auto";
   wrap.append(s.node());
   return wrap;
 }
 
+// Text sizing inside figures; colors come from the page stylesheet.
+const FIGURE_CSS = `
+  svg.fig text { font-family: var(--sans-serif); }
+  svg.fig .label { font-size: 12.5px; }
+  svg.fig .faint { font-size: 11.5px; }
+  svg.fig .mono { font-family: var(--monospace); font-size: 11.5px; }
+  svg.fig .mono.strong { font-weight: 500; }
+  svg.fig .role { font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; }
+  svg.fig .label, svg.fig .faint, svg.fig .mono { paint-order: stroke; stroke-width: 4px; stroke-linejoin: round; }
+`;
+
 function svg(width, height, label) {
-  return d3
-    .create("svg")
+  const s = d3.create("svg").attr("class", "fig");
+  s.append("style").text(FIGURE_CSS);
+  return s
     .attr("viewBox", [0, 0, width, height])
     .attr("width", width)
     .attr("height", height)
@@ -189,7 +160,7 @@ export function chainFigure(width) {
   const W = width;
   const H = narrow ? 360 : 128;
   const pos = nodes.map((_, i) =>
-    narrow ? {x: 24, y: 40 + i * 92} : {x: 40 + (i * (W - 80)) / (nodes.length - 1), y: 62}
+    narrow ? {x: 24, y: 40 + i * 92} : {x: 70 + (i * (W - 140)) / (nodes.length - 1), y: 62}
   );
   const s = svg(W, H, "Maria holds a Mechatronics degree, which certifies PLC Programming, which the Automation Technician job requires.");
   arrowhead(s, "chain-arrow");

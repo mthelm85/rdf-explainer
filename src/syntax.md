@@ -4,14 +4,15 @@ title: Writing RDF
 
 ```js
 import {html} from "htl";
-import {toggle, exampleGraph, highlight} from "./components/figures.js";
+import * as Inputs from "@observablehq/inputs";
+import {exampleGraph, highlight} from "./components/figures.js";
 
 const examples = await FileAttachment("data/examples.json").json();
 ```
 
 # Writing RDF
 
-<p class="lede">RDF is a data model, not a file format. The same graph can be written in several standard syntaxes. Two matter most: <b>Turtle</b>, which is compact and easy to read, and <b>JSON-LD</b>, which is ordinary JSON with a little context added.</p>
+<p>RDF is a data model, not a file format. The same graph can be written in several standard syntaxes. Two matter most: <b>Turtle</b>, which is compact and easy to read, and <b>JSON-LD</b>, which is ordinary JSON with a little context added.</p>
 
 Each example below shows a small graph, then the same triples written both ways. Prefixes such as `schema:` are shorthand for long web addresses, declared once at the top.
 
@@ -22,9 +23,9 @@ const READINGS = {
   skill: "The skills framework defines PLC Programming once, lists the other ways people say it, and places it under a broader category."
 };
 function exampleCard(ex) {
-  const tabs = toggle([{value: "turtle", label: "Turtle"}, {value: "jsonld", label: "JSON-LD"}], "turtle", `${ex.title} syntax`);
-  const code = html`<pre class="md-code" tabindex="0"></pre>`;
-  const copy = html`<button type="button" class="md-text-button">Copy</button>`;
+  const tabs = Inputs.radio(new Map([["Turtle", "turtle"], ["JSON-LD", "jsonld"]]), {label: "Syntax", value: "turtle"});
+  const code = html`<pre tabindex="0"></pre>`;
+  const copy = html`<button type="button">Copy</button>`;
   const show = () => {
     const text = tabs.value === "turtle" ? ex.turtle : ex.jsonld;
     code.innerHTML = highlight(text, tabs.value);
@@ -37,14 +38,13 @@ function exampleCard(ex) {
   };
   tabs.addEventListener("input", show);
   show();
-  return html`<section class="md-card md-card--outlined md-example" aria-labelledby="ex-${ex.id}">
-    <h3 id="ex-${ex.id}">${ex.title}</h3>
+  return html`<div class="card">
     <p>${READINGS[ex.id]}</p>
-    <div class="md-example-graph">${exampleGraph(ex.triples, Math.min(width, 720) - 48)}</div>
-    <p class="md-caption">${ex.triples.length} triples. Dots are things with IRIs; boxes are plain values${ex.id === "record" ? "; the dashed line joins two mentions of the same credential" : ""}.</p>
-    <div class="md-example-bar">${tabs}${copy}</div>
+    ${exampleGraph(ex.triples, Math.min(width, 640) - 32)}
+    <p class="small muted">${ex.triples.length} triples. Dots are things with IRIs; boxes are plain values${ex.id === "record" ? "; the dashed line joins two mentions of the same credential" : ""}.</p>
+    <div style="display: flex; align-items: center; justify-content: space-between;">${tabs}${copy}</div>
     ${code}
-  </section>`;
+  </div>`;
 }
 ```
 
@@ -72,6 +72,5 @@ display(exampleCard(examples[2]));
 
 This is what makes the four phrasings on the [overview](./) line up: a skills framework publishes one IRI per skill, with its preferred label and its alternatives, using the [SKOS](https://www.w3.org/TR/skos-reference/) vocabulary.
 
-<p class="md-caption">Each pair is checked when the site is built: the Turtle and JSON-LD versions must produce exactly the same triples, or the build fails.</p>
+<p class="small muted">Each pair is checked when the site is built: the Turtle and JSON-LD versions must produce exactly the same triples, or the build fails.</p>
 
-<p class="md-caption">Organizations, people and <code>.example</code> addresses in this notebook are fictional. <a href="https://github.com/mthelm85/rdf-explainer">Source and data</a>.</p>

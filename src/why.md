@@ -6,7 +6,8 @@ title: Why it matters
 import * as d3 from "d3";
 import * as Plot from "@observablehq/plot";
 import {html} from "htl";
-import {indexQuads, toggle, networkMini, SK} from "./components/figures.js";
+import * as Inputs from "@observablehq/inputs";
+import {indexQuads, networkMini, SK} from "./components/figures.js";
 import {PHRASING, sourceOf} from "./data/phrasing.js";
 
 const quads = await FileAttachment("data/ecosystem.json").json();
@@ -22,15 +23,10 @@ Much of the friction in the labor market is about information. Employers can't e
 Without shared names, every pair of organizations that wants to exchange data needs its own custom mapping. That cost grows with the *square* of the number of participants. With shared vocabularies and identifiers, each organization maps its data once, to the commons, and can then exchange data with everyone else.
 
 ```js
-const nSlider = html`<input type="range" min="2" max="40" step="1" value="12" aria-label="Organizations in the ecosystem">`;
-const nOrgs = Generators.input(nSlider);
+const nOrgs = view(Inputs.range([2, 40], {label: "Organizations", step: 1, value: 12}));
 ```
 
-<figure class="md-figure">
-
-```js
-display(html`<label class="md-slider"><span class="md-slider-label">Organizations in the ecosystem</span>${nSlider}<output>${nOrgs}</output></label>`);
-```
+<div class="card">
 
 ```js
 const p2p = (nOrgs * (nOrgs - 1)) / 2;
@@ -39,9 +35,9 @@ const curve = d3.range(2, 41).flatMap((n) => [
   {n, integrations: n, approach: "Shared vocabulary"}
 ]);
 const mini = Math.min(220, (width - 32 - 16) / 2);
-display(html`<div class="md-network-pair">
-  <div>${networkMini(nOrgs, "p2p", mini)}<div class="md-stat"><b class="tertiary">${p2p.toLocaleString()}</b><span>custom mappings, point-to-point</span></div></div>
-  <div>${networkMini(nOrgs, "hub", mini)}<div class="md-stat"><b class="primary">${nOrgs}</b><span>mappings to a shared vocabulary</span></div></div>
+display(html`<div class="grid grid-cols-2">
+  <div><h2>Point-to-point</h2><span class="big" style="color: var(--md-tertiary)">${p2p.toLocaleString()}</span> <span class="muted">custom mappings</span>${networkMini(nOrgs, "p2p", mini)}</div>
+  <div><h2>Shared vocabulary</h2><span class="big" style="color: var(--md-primary)">${nOrgs}</span> <span class="muted">mappings</span>${networkMini(nOrgs, "hub", mini)}</div>
 </div>`);
 ```
 
@@ -67,19 +63,19 @@ display(
 );
 ```
 
-<figcaption>Point-to-point mappings grow as n(n − 1)/2. Mapping once to shared vocabularies grows as n. Real ecosystems are never fully connected, but the shape holds: every new participant adds value and, without a commons, adds cost.</figcaption>
-</figure>
+<p class="small muted">Point-to-point mappings grow as n(n − 1)/2. Mapping once to shared vocabularies grows as n. Real ecosystems are never fully connected, but the shape holds: every new participant adds value and, without a commons, adds cost.</p>
+</div>
 
 ## Fewer missed matches
 
 Shared names change that. Here is the same region with the same people, jobs and skills, matched two ways: by comparing each organization's own wording, and by comparing shared skill IRIs.
 
 ```js
-const worker = view(toggle([
-  {value: "https://wallet.example/maria", label: "Maria"},
-  {value: "https://wallet.example/jordan", label: "Jordan"},
-  {value: "https://wallet.example/sam", label: "Sam"}
-], "https://wallet.example/maria", "Worker"));
+const worker = view(Inputs.radio(new Map([
+  ["Maria", "https://wallet.example/maria"],
+  ["Jordan", "https://wallet.example/jordan"],
+  ["Sam", "https://wallet.example/sam"]
+]), {label: "Worker", value: "https://wallet.example/maria"}));
 ```
 
 ```js
@@ -106,7 +102,7 @@ const matches = [...out.keys()]
   .sort((a, b) => b.linked / b.required - a.linked / a.required);
 ```
 
-<figure class="md-figure">
+<div class="card">
 
 ```js
 display(
@@ -131,10 +127,10 @@ display(
 
 ```js
 const kw = d3.sum(matches, (d) => d.keyword), lk = d3.sum(matches, (d) => d.linked);
-display(html`<p class="md-caption"><span class="key hollow"></span> by wording &nbsp; <span class="key"></span> by shared IRI. Across all ${matches.length} jobs, wording finds ${kw} skill matches; shared IRIs find ${lk}.</p>`);
+display(html`<p class="small muted"><svg width="10" height="10" style="vertical-align: -1px"><circle cx="5" cy="5" r="4" fill="none" stroke="var(--md-on-surface-variant)" stroke-width="1.5"/></svg> by wording &nbsp; <svg width="10" height="10" style="vertical-align: -1px"><circle cx="5" cy="5" r="4.5" fill="var(--md-primary)"/></svg> by shared IRI. Across all ${matches.length} jobs, wording finds ${kw} skill matches; shared IRIs find ${lk}.</p>`);
 ```
 
-</figure>
+</div>
 
 Nothing about the people changed, only how the data names things. The same idea lets a college check its courses against live demand, lets an apprenticeship count as evidence alongside a degree, and lets each organization map its data once, to a shared vocabulary, instead of once per partner.
 
@@ -142,4 +138,3 @@ Nothing about the people changed, only how the data names things. The same idea 
 
 Standards for this already exist: [schema.org](https://schema.org/JobPosting) for job postings, [CTDL](https://credreg.net/ctdl/handbook) for credentials, [Open Badges 3.0](https://www.imsglobal.org/spec/ob/v3p0/) for verifiable achievements, and [SKOS](https://www.w3.org/TR/skos-reference/) for skill frameworks. All of them can be published as ordinary JSON with one extra line, an `@context`, which is often the first step.
 
-<p class="md-caption">Organizations, people and <code>.example</code> addresses in this notebook are fictional. <a href="https://github.com/mthelm85/rdf-explainer">Source and data</a>.</p>

@@ -15,7 +15,7 @@ Live at **https://mthelm85.github.io/rdf-explainer/**. Built with [Observable Fr
 
 ## Design
 
-The notebook follows **Material Design 3**: color roles generated with [`@material/material-color-utilities`](https://github.com/material-foundation/material-color-utilities) (tonal-spot scheme, seed `#2563EB`) in light and dark, the MD3 type scale in Roboto Flex, navigation drawer, segmented buttons, cards and state layers. All text meets WCAG AA contrast (≥ 4.5:1) and meaningful graphics meet 3:1. Tokens live at the top of `src/style.css`.
+Observable Framework's default layout, typography and components, with only the colors changed. The palette uses Material Design 3 color roles generated with [`@material/material-color-utilities`](https://github.com/material-foundation/material-color-utilities) (tonal-spot scheme, seed `#2563EB`), in light and dark, mapped onto Framework's `--theme-*` variables in `src/style.css`. All text meets WCAG AA contrast (≥ 4.5:1) and meaningful graphics meet 3:1.
 
 ## Data
 
