@@ -45,6 +45,8 @@
 		{:else}
 			Separate: no dataset on its own links Maria to a job.
 		{/if}
+		Links mean <em>requires</em>, <em>hiring organization</em>, <em>certifies</em>,
+		<em>recognized by</em>, <em>holds credential</em> or <em>knows about</em>; hover over one to see which.
 	</figcaption>
 </figure>
 

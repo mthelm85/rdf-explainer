@@ -331,11 +331,32 @@ const SKIP = new Set([RDF_TYPE, SCHEMA + "teaches", SCHEMA + "provider", SCHEMA 
 // Within each publisher's column: the publisher (or person) first, then what it describes.
 const ROLE_ORDER = ["person", "college", "employer", "credential", "job", "skill"];
 
+const PREDICATE_LABEL = {
+  [SCHEMA + "skills"]: "requires",
+  [SCHEMA + "hiringOrganization"]: "hiring organization",
+  [SCHEMA + "competencyRequired"]: "certifies",
+  [SCHEMA + "recognizedBy"]: "recognized by",
+  [SCHEMA + "hasCredential"]: "holds credential",
+  [SCHEMA + "knowsAbout"]: "knows about"
+};
+
 export function mergeFigure({quads, index, panels, width}) {
   const narrow = width < 560;
   const W = width;
-  const H = narrow ? 720 : 440;
   const perPanel = panels.map((p) => quads.filter((q) => q.g === p.graph && !q.literal && !SKIP.has(q.p)));
+
+  // The separate view stacks the three datasets, each sized to its rows.
+  const rowH = narrow ? 21 : 22;
+  const panelGeom = [];
+  let y0 = 0;
+  for (const qs of perPanel) {
+    const iris = new Set(qs.flatMap((q) => [q.s, q.o]));
+    const skills = [...iris].filter((x) => x.startsWith(SK)).length;
+    const rows = Math.max(skills, iris.size - skills, 1);
+    panelGeom.push({top: y0, rows});
+    y0 += 30 + rows * rowH + 22;
+  }
+  const H = Math.max(y0, narrow ? 720 : 460);
   const count = new Map();
   perPanel.forEach((qs) => new Set(qs.flatMap((q) => [q.s, q.o])).forEach((iri) => count.set(iri, (count.get(iri) ?? 0) + 1)));
 
@@ -369,13 +390,27 @@ export function mergeFigure({quads, index, panels, width}) {
     .data(panels)
     .join("text")
     .attr("class", "role")
-    .attr("x", (d, i) => (narrow ? 0 : (W / panels.length) * (i + 0.5)))
-    .attr("y", (d, i) => (narrow ? (H / panels.length) * i + 12 : 12))
-    .attr("text-anchor", narrow ? "start" : "middle")
+    .attr("x", 0)
+    .attr("y", (d, i) => panelGeom[i].top + 12)
+    .attr("text-anchor", "start")
     .text((d) => d.title);
+  // separator rules between the stacked datasets
+  const rules = s
+    .append("g")
+    .selectAll("line")
+    .data(panelGeom.slice(1))
+    .join("line")
+    .attr("x1", 0)
+    .attr("x2", W)
+    .attr("y1", (g) => g.top - 11)
+    .attr("y2", (g) => g.top - 11)
+    .attr("stroke", "var(--rule)");
   const gLinks = s.append("g").attr("fill", "none").attr("shape-rendering", "geometricPrecision").attr("stroke-linecap", "round");
+  const gHits = s.append("g").attr("fill", "none").attr("stroke", "transparent").attr("stroke-width", 10);
   const gNodes = s.append("g");
+  const hoverLabel = s.append("text").attr("class", "mono hover-label").attr("pointer-events", "none").attr("opacity", 0);
   let current = new Map();
+  let hitTimer;
 
   // Evenly spread a list of nodes along one axis
   const spread = (list, from, to, set) => {
@@ -385,25 +420,28 @@ export function mergeFigure({quads, index, panels, width}) {
 
   function layoutSeparate() {
     const nodes = [];
+    const ex = W * (narrow ? 0.42 : 0.36);
+    const sx = W * (narrow ? 0.58 : 0.62);
     perPanel.forEach((qs, i) => {
       const iris = [...new Set(qs.flatMap((q) => [q.s, q.o]))];
       const ents = iris.filter((x) => role(x) !== "skill").sort((a, b) => ROLE_ORDER.indexOf(role(a)) - ROLE_ORDER.indexOf(role(b)));
-      const skills = iris.filter((x) => role(x) === "skill").sort();
+      const skills = iris.filter((x) => role(x) === "skill").sort((a, b) => index.label(a).localeCompare(index.label(b)));
       const mk = (iri) => ({id: `${i}|${iri}`, iri, role: role(iri), panel: i});
       const E = ents.map(mk), S = skills.map(mk);
-      if (narrow) {
-        const top = (H / panels.length) * i + 34, bot = (H / panels.length) * (i + 1) - 14;
-        E.forEach((d) => (d.x = W * 0.42));
-        S.forEach((d) => (d.x = W - 12));
-        spread(E, top + 6, bot - 6, (d, v) => (d.y = v));
-        spread(S, top, bot, (d, v) => (d.y = v));
-      } else {
-        const left = (W / panels.length) * i, pw = W / panels.length;
-        E.forEach((d) => (d.x = left + pw * 0.45));
-        S.forEach((d) => (d.x = left + pw * 0.9));
-        spread(E, 70, H - 40, (d, v) => (d.y = v));
-        spread(S, 40, H - 16, (d, v) => (d.y = v));
-      }
+      const {top, rows} = panelGeom[i];
+      const first = top + 30, last = top + 30 + (rows - 1) * rowH;
+      const mid = (first + last) / 2;
+      const place = (list, x) => {
+        const span = (list.length - 1) * rowH;
+        list.forEach((d, k) => {
+          d.x = x;
+          d.y = list.length === 1 ? mid : mid - span / 2 + k * rowH;
+        });
+      };
+      // Entities get extra room between them when there are few of them
+      place(E, ex);
+      if (E.length > 1 && E.length < rows) spread(E, first, last, (d, v) => (d.y = v));
+      place(S, sx);
       nodes.push(...E, ...S);
     });
     return nodes;
@@ -425,7 +463,7 @@ export function mergeFigure({quads, index, panels, width}) {
         spread(list, m, W - m, (d, v) => (d.x = v));
       } else {
         list.forEach((d) => (d.x = xs[c]));
-        spread(list, 40, H - 20, (d, v) => (d.y = v));
+        spread(list, 40, Math.min(H, 520) - 20, (d, v) => (d.y = v));
       }
       nodes.push(...list);
     };
@@ -444,11 +482,28 @@ export function mergeFigure({quads, index, panels, width}) {
     return nodes;
   }
 
-  const curve = (a, b) =>
-    narrow ? d3.linkVertical()({source: [a.x, a.y], target: [b.x, b.y]}) : d3.linkHorizontal()({source: [a.x, a.y], target: [b.x, b.y]});
+  // The merged view runs top-to-bottom on narrow screens; everything else runs left-to-right.
+  let vertical = false;
+  const curve = (a, b) => {
+    // Links between nodes stacked in one column (or row) bow outward instead
+    // of running straight through the nodes between them.
+    if (!vertical && Math.abs(a.x - b.x) < 1) {
+      const k = Math.min(90, 18 + Math.abs(b.y - a.y) * 0.35);
+      return `M${a.x},${a.y} C${a.x + k},${a.y} ${b.x + k},${b.y} ${b.x},${b.y}`;
+    }
+    if (vertical && Math.abs(a.y - b.y) < 1) {
+      const k = Math.min(60, 14 + Math.abs(b.x - a.x) * 0.3);
+      return `M${a.x},${a.y} C${a.x},${a.y + k} ${b.x},${b.y + k} ${b.x},${b.y}`;
+    }
+    return vertical
+      ? d3.linkVertical()({source: [a.x, a.y], target: [b.x, b.y]})
+      : d3.linkHorizontal()({source: [a.x, a.y], target: [b.x, b.y]});
+  };
 
   function render(mode) {
     const merged = mode === "merged";
+    // Exiting links keep the old orientation during the tween; that is imperceptible.
+    vertical = merged && narrow;
     const nodes = merged ? layoutMerged() : layoutSeparate();
     const byId = new Map(nodes.map((d) => [d.id, d]));
     const key = (i, iri) => (merged ? iri : `${i}|${iri}`);
@@ -459,11 +514,13 @@ export function mergeFigure({quads, index, panels, width}) {
         const id = `${key(i, q.s)} ${q.p} ${key(i, q.o)}`;
         if (seenEdge.has(id)) return;
         seenEdge.add(id);
-        edges.push({id, a: byId.get(key(i, q.s)), b: byId.get(key(i, q.o)), hot: merged && onPath(q)});
+        edges.push({id, a: byId.get(key(i, q.s)), b: byId.get(key(i, q.o)), hot: merged && onPath(q), label: PREDICATE_LABEL[q.p] ?? q.p});
       })
     );
 
     heads.transition().duration(400).attr("opacity", merged ? 0 : 1);
+    rules.transition().duration(400).attr("opacity", merged ? 0 : 1);
+    hoverLabel.attr("opacity", 0);
 
     // Where every node starts this transition: its old spot, or (when merging)
     // the average of the copies it is replacing, or (when splitting) the merged node.
@@ -515,7 +572,16 @@ export function mergeFigure({quads, index, panels, width}) {
       .attrTween("d", travel(start, (n) => n))
       .attr("opacity", 1);
 
-    const labelFor = (d) => (d.role === "skill" && (!merged || narrow) ? "" : short(index.label(d.iri)));
+    const labelFor = (d) => (d.role === "skill" && merged && narrow ? "" : short(index.label(d.iri)));
+    // Separate view: entities labelled to the left, skills to the right.
+    // Merged view: entities labelled above, skills to the right.
+    const labelAttrs = (sel) =>
+      sel
+        .attr("class", (d) => (d.role === "skill" ? "faint" : "label"))
+        .attr("text-anchor", (d) => (d.role === "skill" ? "start" : merged ? "middle" : "end"))
+        .attr("x", (d) => (d.role === "skill" ? 9 : merged ? 0 : -10))
+        .attr("dy", (d) => (d.role === "skill" || !merged ? "0.35em" : "-0.9em"))
+        .text(labelFor);
     const node = gNodes
       .selectAll("g")
       .data(nodes, (d) => d.id)
@@ -553,14 +619,58 @@ export function mergeFigure({quads, index, panels, width}) {
       .attr("fill", (d) =>
         d.role !== "skill" ? "var(--ink)" : merged ? (held.has(d.iri) && wanted.has(d.iri) ? "var(--accent)" : "var(--faint)") : count.get(d.iri) > 1 ? "var(--accent)" : "var(--faint)"
       );
+    // Fade labels out, reposition them while nodes travel, fade them back in
     node
       .select("text")
-      .attr("class", (d) => (d.role === "skill" ? "faint" : "label"))
-      .attr("text-anchor", (d) => (d.role === "skill" ? "start" : "middle"))
-      .attr("x", (d) => (d.role === "skill" ? 9 : 0))
-      .attr("dy", (d) => (d.role === "skill" ? "0.35em" : "-0.9em"))
-      .text(labelFor);
+      .interrupt()
+      .transition()
+      .duration(120)
+      .attr("opacity", 0)
+      .on("end", function () {
+        labelAttrs(d3.select(this));
+      })
+      .transition()
+      .delay(DURATION - 320)
+      .duration(260)
+      .attr("opacity", 1);
     node.select("title").text((d) => `${index.label(d.iri)}\n${d.iri}`);
+
+    const visible = new Map();
+    gLinks.selectAll("path").each(function (d) {
+      visible.set(d.id, this);
+    });
+    const restyle = (el, d, on) =>
+      d3
+        .select(el)
+        .attr("stroke", on ? "var(--ink)" : d.hot ? "var(--accent)" : merged ? "var(--edge-light)" : "var(--edge)")
+        .attr("stroke-width", on ? 2.25 : d.hot ? 1.75 : 1.25);
+    gHits
+      .selectAll("path")
+      .data(edges, (d) => d.id)
+      .join("path")
+      .attr("d", null)
+      .on("pointerenter", function (event, d) {
+        const el = visible.get(d.id);
+        if (el) {
+          restyle(el, d, true);
+          el.parentNode.appendChild(el);
+        }
+        const [x, y] = d3.pointer(event, s.node());
+        hoverLabel.text(d.label).attr("x", x + 8).attr("y", y - 8).attr("opacity", 1);
+      })
+      .on("pointermove", (event) => {
+        const [x, y] = d3.pointer(event, s.node());
+        hoverLabel.attr("x", x + 8).attr("y", y - 8);
+      })
+      .on("pointerleave", function (event, d) {
+        const el = visible.get(d.id);
+        if (el) restyle(el, d, false);
+        hoverLabel.attr("opacity", 0);
+      });
+    clearTimeout(hitTimer);
+    hitTimer = setTimeout(() => {
+      gHits.selectAll("path").attr("d", (d) => curve(d.a, d.b));
+    }, DURATION + 20);
 
     const jobs = merged ? nodes.filter((d) => d.role === "job" && objs(d.iri, "skills").some((x) => held.has(x))).length : 0;
     const via = merged ? [...held].filter((x) => wanted.has(x)).length : 0;

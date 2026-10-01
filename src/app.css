@@ -163,6 +163,11 @@ svg .mono {
 	fill: var(--muted);
 }
 
+svg .hover-label {
+	fill: var(--ink);
+	font-weight: 600;
+}
+
 svg .mono.strong {
 	fill: var(--ink);
 	font-weight: 600;
