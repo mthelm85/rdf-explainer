@@ -27,6 +27,8 @@ npm run build    # static site in ./dist
 
 All JavaScript libraries (d3, Observable Plot, Inputs, htl) are imported from `node_modules` and bundled into the build, so the built site does not depend on a CDN. Fonts load from Google Fonts with system fallbacks.
 
+Pushes to `main` are built and published to GitHub Pages by `.github/workflows/deploy.yml` (repo **Settings → Pages → Source: GitHub Actions**). The site will be at https://mthelm85.github.io/rdf-explainer/.
+
 `dist/` is a plain static site: deploy it to any static host (GitHub Pages, Netlify, S3, Observable with `npm run deploy`). The host should serve `engineering.html` for `/engineering` (most do by default).
 
 ## Layout
