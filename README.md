@@ -1,49 +1,28 @@
-# RDF, Explained
+# RDF, briefly
 
-An illustrated, interactive explainer of the **Resource Description Framework (RDF)** — and of how shared, linked data could reduce frictions in the education and workforce ecosystem by letting information flow between employers, colleges, apprenticeship programs and workers.
+A short, minimal explainer of the **Resource Description Framework (RDF)**, and of why shared, linked data could reduce frictions between workers, employers, colleges and apprenticeship programs.
 
-Built with [Observable Framework](https://observablehq.com/framework/). Two pages:
+Live at **https://mthelm85.github.io/rdf-explainer/**. Built with [Observable Framework](https://observablehq.com/framework/), [D3](https://d3js.org) and [Observable Plot](https://observablehq.com/plot/).
 
-| Page | Audience | What's on it |
-|---|---|---|
-| **The explainer** (`src/index.md`) | Everyone, plus ⚙ deep-dive notes for engineers | Animated hero graph · "four names, one skill" · triple composer · IRI anatomy · datasets merging live · Turtle playground re-serialized to JSON-LD / N-Triples / RDF/XML · vocabulary landscape · SPARQL workbench with highlighted results · integration-cost scaling · ecosystem feedback loop · keyword vs. linked-skill matching · friction table · adoption roadmap |
-| **Engineer's field guide** (`src/engineering.md`) | Architects & IT engineers | Clickable reference architecture · RDF vs. SQL vs. property graphs · live JSON-LD lab · SHACL validation lab · named-graph provenance · Open Badges 3.0 / Verifiable Credential example · storage engines · sharp edges · starter checklist |
+## What's on the page
 
-Everything interactive runs in the browser on real standards tooling: [Oxigraph](https://github.com/oxigraph/oxigraph) (a Rust RDF store and SPARQL 1.1 engine compiled to WebAssembly) is vendored in `src/lib/oxigraph/` and parses Turtle, TriG and JSON-LD and executes SPARQL queries client-side.
+1. **A fact has three parts.** Triples, and how they chain into a graph.
+2. **One name for one thing.** Four phrasings of a skill, joined by one shared IRI.
+3. **Data that merges.** An employer's, a college's and a worker's data merging on shared names.
+4. **Why it matters.** Matching jobs by each organization's own wording versus by shared skill IRIs.
 
-## The example dataset
+## Data
 
-`src/data/ecosystem.trig` describes a fictional regional talent ecosystem ("Riverbend"): two employers, a community college, an electrical apprenticeship program, a workforce board's skills framework (SKOS) and three workers' wallets. Each publisher's data lives in its **own named graph**; they share only vocabularies (schema.org, SKOS, CTDL) and skill IRIs. Every visualization, query and match on the site is computed from this one file, so editing it changes the whole site.
-
-`src/data/phrasing.js` records how each publisher *wrote* each skill in free text, which powers the keyword-matching comparison.
+`src/data/ecosystem.trig` describes a fictional regional ecosystem, with each publisher in its own named graph. A Framework data loader (`src/data/ecosystem.json.js`) parses it with [N3.js](https://github.com/rdfjs/N3.js) at build time, so the page ships plain JSON. `src/data/phrasing.js` records how each organization worded each skill, which powers the keyword-matching comparison.
 
 ## Develop
 
 ```sh
 npm install
-npm run dev      # local preview with live reload at http://127.0.0.1:3000
+npm run dev      # preview at http://127.0.0.1:3000
 npm run build    # static site in ./dist
 ```
 
-All JavaScript libraries (d3, Observable Plot, Inputs, htl) are imported from `node_modules` and bundled into the build, so the built site does not depend on a CDN. Fonts load from Google Fonts with system fallbacks.
-
-Pushes to `main` are built and published to GitHub Pages by `.github/workflows/deploy.yml` (repo **Settings → Pages → Source: GitHub Actions**). The site will be at https://mthelm85.github.io/rdf-explainer/.
-
-`dist/` is a plain static site: deploy it to any static host (GitHub Pages, Netlify, S3, Observable with `npm run deploy`). The host should serve `engineering.html` for `/engineering` (most do by default).
-
-## Layout
-
-```
-src/
-  index.md, engineering.md     pages
-  style.css                    theme (light + dark), typography, components
-  components/                  D3 visualizations and RDF helpers
-    rdf.js                     prefixes, compaction, quads → graph, Turtle/JSON-LD printers
-    store.js                   Oxigraph loader + SPARQL helper
-    forceGraph.js              reusable force-directed RDF graph
-    hero.js, babel.js, mergeViz.js, loop.js, integrations.js, triple.js, seg.js
-  data/ecosystem.trig          the example dataset
-  lib/oxigraph/                vendored Oxigraph WebAssembly build (MIT / Apache-2.0)
-```
+Pushes to `main` deploy to GitHub Pages via `.github/workflows/deploy.yml`.
 
 All organizations, people and `.example` identifiers are fictional.
