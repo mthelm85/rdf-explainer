@@ -1,14 +1,15 @@
 {
   "@context": {
     "skos": "http://www.w3.org/2004/02/skos/core#",
+    "schema": "https://schema.org/",
     "sk": "https://skills.riverbend.example/skill/",
     "prefLabel": { "@id": "skos:prefLabel", "@language": "en" },
     "altLabel": { "@id": "skos:altLabel", "@language": "en" },
     "broader": { "@id": "skos:broader", "@type": "@id" }
   },
   "@id": "sk:plc-programming",
-  "@type": "skos:Concept",
+  "@type": ["skos:Concept", "schema:DefinedTerm"],
   "prefLabel": "PLC Programming",
-  "altLabel": ["ladder logic", "programmable controllers"],
+  "altLabel": ["ladder logic", "programmable logic controllers", "PLCs"],
   "broader": "sk:industrial-automation"
 }

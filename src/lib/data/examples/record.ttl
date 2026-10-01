@@ -10,5 +10,6 @@ wallet:maria
 
 rcc:credential-aas-mechatronics
     a schema:EducationalOccupationalCredential ;
-    schema:name "AAS in Mechatronics" ;
+    schema:name "Associate of Applied Science in Mechatronics" ;
+    schema:recognizedBy rcc:org ;
     schema:competencyRequired sk:plc-programming, sk:robot-operation .

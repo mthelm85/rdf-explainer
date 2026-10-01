@@ -9,6 +9,7 @@
   "schema:title": "Automation Technician",
   "schema:hiringOrganization": { "@id": "acme:org" },
   "schema:baseSalary": 68000,
+  "schema:salaryCurrency": "USD",
   "schema:skills": [
     { "@id": "sk:plc-programming" },
     { "@id": "sk:robot-operation" }

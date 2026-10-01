@@ -7,4 +7,5 @@ acme:job-automation-technician
     schema:title "Automation Technician" ;
     schema:hiringOrganization acme:org ;
     schema:baseSalary 68000 ;
+    schema:salaryCurrency "USD" ;
     schema:skills sk:plc-programming, sk:robot-operation .

@@ -34,64 +34,64 @@ rwb:graph {
     skos:prefLabel "Riverbend Regional Skills Framework"@en ;
     schema:publisher rwb:org .
 
-  sk:industrial-automation a skos:Concept ; skos:inScheme sk:framework ;
+  sk:industrial-automation a skos:Concept, schema:DefinedTerm ; skos:inScheme sk:framework ;
     skos:prefLabel "Industrial Automation"@en .
-  sk:electrical-systems a skos:Concept ; skos:inScheme sk:framework ;
+  sk:electrical-systems a skos:Concept, schema:DefinedTerm ; skos:inScheme sk:framework ;
     skos:prefLabel "Electrical Systems"@en .
-  sk:digital-data a skos:Concept ; skos:inScheme sk:framework ;
+  sk:digital-data a skos:Concept, schema:DefinedTerm ; skos:inScheme sk:framework ;
     skos:prefLabel "Digital & Data"@en .
-  sk:foundational a skos:Concept ; skos:inScheme sk:framework ;
+  sk:foundational a skos:Concept, schema:DefinedTerm ; skos:inScheme sk:framework ;
     skos:prefLabel "Foundational Skills"@en .
 
-  sk:plc-programming a skos:Concept ; skos:inScheme sk:framework ;
+  sk:plc-programming a skos:Concept, schema:DefinedTerm ; skos:inScheme sk:framework ;
     skos:prefLabel "PLC Programming"@en ;
     skos:altLabel "ladder logic"@en, "programmable logic controllers"@en, "PLCs"@en ;
     skos:broader sk:industrial-automation .
-  sk:robot-operation a skos:Concept ; skos:inScheme sk:framework ;
+  sk:robot-operation a skos:Concept, schema:DefinedTerm ; skos:inScheme sk:framework ;
     skos:prefLabel "Industrial Robot Operation"@en ;
     skos:altLabel "robot programming"@en, "FANUC robot operation"@en ;
     skos:broader sk:industrial-automation .
-  sk:sensors-instrumentation a skos:Concept ; skos:inScheme sk:framework ;
+  sk:sensors-instrumentation a skos:Concept, schema:DefinedTerm ; skos:inScheme sk:framework ;
     skos:prefLabel "Sensors & Instrumentation"@en ;
     skos:altLabel "instrumentation"@en, "sensors"@en ;
     skos:broader sk:industrial-automation .
-  sk:hydraulics-pneumatics a skos:Concept ; skos:inScheme sk:framework ;
+  sk:hydraulics-pneumatics a skos:Concept, schema:DefinedTerm ; skos:inScheme sk:framework ;
     skos:prefLabel "Hydraulics & Pneumatics"@en ;
     skos:altLabel "fluid power"@en ;
     skos:broader sk:industrial-automation .
-  sk:motor-controls a skos:Concept ; skos:inScheme sk:framework ;
+  sk:motor-controls a skos:Concept, schema:DefinedTerm ; skos:inScheme sk:framework ;
     skos:prefLabel "Motor Controls"@en ;
     skos:altLabel "motor control circuits"@en ;
     skos:broader sk:industrial-automation, sk:electrical-systems .
-  sk:electrical-safety a skos:Concept ; skos:inScheme sk:framework ;
+  sk:electrical-safety a skos:Concept, schema:DefinedTerm ; skos:inScheme sk:framework ;
     skos:prefLabel "Electrical Safety"@en ;
     skos:altLabel "NFPA 70E"@en, "arc flash safety"@en ;
     skos:broader sk:electrical-systems .
-  sk:wiring a skos:Concept ; skos:inScheme sk:framework ;
+  sk:wiring a skos:Concept, schema:DefinedTerm ; skos:inScheme sk:framework ;
     skos:prefLabel "Wiring Methods"@en ;
     skos:altLabel "conduit bending & wiring"@en ;
     skos:broader sk:electrical-systems .
-  sk:python a skos:Concept ; skos:inScheme sk:framework ;
+  sk:python a skos:Concept, schema:DefinedTerm ; skos:inScheme sk:framework ;
     skos:prefLabel "Python Programming"@en ;
     skos:altLabel "Python"@en, "Python scripting"@en ;
     skos:broader sk:digital-data .
-  sk:sql a skos:Concept ; skos:inScheme sk:framework ;
+  sk:sql a skos:Concept, schema:DefinedTerm ; skos:inScheme sk:framework ;
     skos:prefLabel "SQL & Databases"@en ;
     skos:altLabel "SQL queries"@en, "database fundamentals"@en ;
     skos:broader sk:digital-data .
-  sk:data-analysis a skos:Concept ; skos:inScheme sk:framework ;
+  sk:data-analysis a skos:Concept, schema:DefinedTerm ; skos:inScheme sk:framework ;
     skos:prefLabel "Data Analysis"@en ;
     skos:altLabel "Excel / data analysis"@en ;
     skos:broader sk:digital-data .
-  sk:blueprint-reading a skos:Concept ; skos:inScheme sk:framework ;
+  sk:blueprint-reading a skos:Concept, schema:DefinedTerm ; skos:inScheme sk:framework ;
     skos:prefLabel "Blueprint & Schematic Reading"@en ;
     skos:altLabel "print reading"@en, "read schematics"@en ;
     skos:broader sk:foundational .
-  sk:troubleshooting a skos:Concept ; skos:inScheme sk:framework ;
+  sk:troubleshooting a skos:Concept, schema:DefinedTerm ; skos:inScheme sk:framework ;
     skos:prefLabel "Systematic Troubleshooting"@en ;
     skos:altLabel "troubleshooting"@en ;
     skos:broader sk:foundational .
-  sk:teamwork a skos:Concept ; skos:inScheme sk:framework ;
+  sk:teamwork a skos:Concept, schema:DefinedTerm ; skos:inScheme sk:framework ;
     skos:prefLabel "Team Communication"@en ;
     skos:altLabel "teamwork"@en, "communication"@en ;
     skos:broader sk:foundational .
@@ -109,6 +109,7 @@ acme:graph {
     schema:datePosted "2026-09-14"^^xsd:date ;
     schema:employmentType "FULL_TIME" ;
     schema:baseSalary 68000 ;
+    schema:salaryCurrency "USD" ;
     schema:occupationalCategory "17-3024.01" ;
     schema:skills sk:plc-programming, sk:robot-operation, sk:sensors-instrumentation,
                   sk:troubleshooting, sk:electrical-safety, sk:blueprint-reading .
@@ -119,6 +120,7 @@ acme:graph {
     schema:datePosted "2026-09-20"^^xsd:date ;
     schema:employmentType "FULL_TIME" ;
     schema:baseSalary 64000 ;
+    schema:salaryCurrency "USD" ;
     schema:skills sk:python, sk:sql, sk:data-analysis, sk:sensors-instrumentation,
                   sk:troubleshooting .
 
@@ -128,6 +130,7 @@ acme:graph {
     schema:datePosted "2026-09-22"^^xsd:date ;
     schema:employmentType "FULL_TIME" ;
     schema:baseSalary 47000 ;
+    schema:salaryCurrency "USD" ;
     schema:skills sk:robot-operation, sk:electrical-safety, sk:troubleshooting, sk:teamwork .
 }
 
@@ -143,6 +146,7 @@ north:graph {
     schema:datePosted "2026-09-10"^^xsd:date ;
     schema:employmentType "FULL_TIME" ;
     schema:baseSalary 74000 ;
+    schema:salaryCurrency "USD" ;
     schema:occupationalCategory "47-2111.00" ;
     schema:skills sk:wiring, sk:motor-controls, sk:electrical-safety, sk:blueprint-reading,
                   sk:plc-programming, sk:troubleshooting .
@@ -153,6 +157,7 @@ north:graph {
     schema:datePosted "2026-09-25"^^xsd:date ;
     schema:employmentType "FULL_TIME" ;
     schema:baseSalary 71000 ;
+    schema:salaryCurrency "USD" ;
     schema:skills sk:plc-programming, sk:motor-controls, sk:sensors-instrumentation,
                   sk:troubleshooting, sk:teamwork .
 }

@@ -10,7 +10,7 @@
 
 <p>
 	RDF is a data model, not a file format. The same graph can be written in several standard
-	syntaxes. Two matter most: <strong>Turtle</strong>, which is compact and easy to read, and
+	syntaxes. Two common formats are: <strong>Turtle</strong>, which is compact and easy to read, and
 	<strong>JSON-LD</strong>, which is ordinary JSON with a little context added.
 </p>
 
@@ -37,7 +37,7 @@
 
 <Example
 	example={record}
-	reading="Maria holds a credential from Riverbend Community College. The credential describes the skills it certifies, using the same skill IRIs as the job posting."
+	reading="Maria holds a credential recognized by Riverbend Community College. The credential describes the skills it certifies, using the same skill IRIs as the job posting."
 	note="; the dashed line joins two mentions of the same credential"
 />
 

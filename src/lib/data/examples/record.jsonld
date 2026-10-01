@@ -4,6 +4,7 @@
     "sk": "https://skills.riverbend.example/skill/",
     "rcc": "https://catalog.riverbend-cc.example/",
     "wallet": "https://wallet.example/",
+    "recognizedBy": { "@type": "@id" },
     "competencyRequired": { "@type": "@id" }
   },
   "@id": "wallet:maria",
@@ -12,7 +13,8 @@
   "hasCredential": {
     "@id": "rcc:credential-aas-mechatronics",
     "@type": "EducationalOccupationalCredential",
-    "name": "AAS in Mechatronics",
+    "name": "Associate of Applied Science in Mechatronics",
+    "recognizedBy": "rcc:org",
     "competencyRequired": ["sk:plc-programming", "sk:robot-operation"]
   }
 }

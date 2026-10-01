@@ -1,8 +1,9 @@
-@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
-@prefix sk:   <https://skills.riverbend.example/skill/> .
+@prefix skos:   <http://www.w3.org/2004/02/skos/core#> .
+@prefix schema: <https://schema.org/> .
+@prefix sk:     <https://skills.riverbend.example/skill/> .
 
 sk:plc-programming
-    a skos:Concept ;
+    a skos:Concept, schema:DefinedTerm ;
     skos:prefLabel "PLC Programming"@en ;
-    skos:altLabel "ladder logic"@en, "programmable controllers"@en ;
+    skos:altLabel "ladder logic"@en, "programmable logic controllers"@en, "PLCs"@en ;
     skos:broader sk:industrial-automation .
