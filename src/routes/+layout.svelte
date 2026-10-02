@@ -40,16 +40,16 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
-	<title>A Primer on the Resource Description Framework</title>
+	<title>An Introduction to RDF</title>
 	<meta
 		name="description"
-		content="A primer on the Resource Description Framework (RDF), and how shared, linked data can help reduce labor market friction."
+		content="An introduction to the Resource Description Framework (RDF), and how shared, linked data can help reduce labor market friction."
 	/>
 </svelte:head>
 
 <div class="shell">
 	<nav aria-label="Sections">
-		<a class="site" href="#top">An RDF primer</a>
+		<a class="site" href="#top">An introduction to RDF</a>
 		<ol>
 			{#each SECTIONS as s (s.id)}
 				<li>

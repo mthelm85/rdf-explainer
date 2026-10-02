@@ -10,7 +10,7 @@
 </script>
 
 <header id="top">
-	<h1>A Primer on the Resource Description Framework</h1>
+	<h1>An Introduction to RDF</h1>
 	<p class="subtitle">And how it can help reduce labor market friction</p>
 </header>
 

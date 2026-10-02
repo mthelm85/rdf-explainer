@@ -1,4 +1,4 @@
-# A Primer on the Resource Description Framework
+# An Introduction to RDF
 
 A short, minimal explainer of the **Resource Description Framework (RDF)**, and of why shared, linked data could reduce frictions between workers, employers, colleges and apprenticeship programs.
 
