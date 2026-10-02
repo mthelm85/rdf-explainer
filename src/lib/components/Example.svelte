@@ -8,7 +8,8 @@
 
 	let syntax = $state('turtle');
 	let copied = $state(false);
-	const text = $derived(syntax === 'turtle' ? example.turtle : example.jsonld);
+	const NAMES = { turtle: 'Turtle', jsonld: 'JSON-LD', ntriples: 'N-Triples' };
+	const text = $derived(example[syntax]);
 
 	async function copy() {
 		await navigator.clipboard?.writeText(text);
@@ -30,7 +31,8 @@
 	<Toggle
 		options={[
 			{ value: 'turtle', label: 'Turtle' },
-			{ value: 'jsonld', label: 'JSON-LD' }
+			{ value: 'jsonld', label: 'JSON-LD' },
+			{ value: 'ntriples', label: 'N-Triples' }
 		]}
 		bind:value={syntax}
 		label="{example.title} syntax"
@@ -40,8 +42,8 @@
 <!-- highlight() escapes the source before adding token spans -->
 <!-- Focusable so keyboard users can scroll long lines horizontally. -->
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-<pre tabindex="0" aria-label="{example.title} in {syntax === 'turtle' ? 'Turtle' : 'JSON-LD'}"><code
-		>{@html highlight(text, syntax)}</code
+<pre tabindex="0" aria-label="{example.title} in {NAMES[syntax]}"><code
+		>{@html highlight(text, syntax === 'jsonld' ? 'jsonld' : 'turtle')}</code
 	></pre>
 
 <style>

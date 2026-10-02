@@ -127,8 +127,9 @@
 
 <p>
 	Much of the friction in the labor market is about information. Employers can’t easily tell what a
-	credential certifies. Workers struggle to prove skills learned on the job or in an apprenticeship.
-	Colleges hear about changing demand slowly. And connecting their systems is expensive.
+	credential certifies, while workers struggle to prove skills learned on the job or in an
+	apprenticeship. Education and training providers get signals about changing demand too slowly, and
+	connecting all of these systems together is difficult and expensive.
 </p>
 
 <h3 id="integration">The integration explosion</h3>
@@ -141,7 +142,7 @@
 </p>
 
 <p>
-	With shared vocabularies and identifiers, each organization maps its data once, to the commons,
+	With shared vocabularies and identifiers, each organization maps its data once, to a shared vocabulary,
 	and can then exchange data with everyone else who did the same. The number of mappings grows in
 	step with the number of participants.
 </p>
@@ -281,17 +282,6 @@
 	Nothing about the people changed, only how the data names things. The same idea lets a college
 	check its courses against live demand, lets an apprenticeship count as evidence alongside a degree,
 	and lets each organization map its data once, to a shared vocabulary, instead of once per partner.
-</p>
-
-<h2 id="start">Where to start</h2>
-
-<p>
-	Standards for this already exist: <a href="https://schema.org/JobPosting">schema.org</a> for job
-	postings, <a href="https://credreg.net/ctdl/handbook">CTDL</a> for credentials,
-	<a href="https://www.imsglobal.org/spec/ob/v3p0/">Open Badges 3.0</a> for verifiable achievements,
-	and <a href="https://www.w3.org/TR/skos-reference/">SKOS</a> for skill frameworks. All of them can
-	be published as ordinary JSON with one extra line, an <code>@context</code>, which is often the
-	first step. The last section shows what that looks like.
 </p>
 
 <style>

@@ -14,7 +14,7 @@
 </p>
 
 <p>
-	RDF names things with web addresses (IRIs) such as
+	RDF names things with Internationalized Resource Identifiers (IRIs), web addresses such as
 	<code>https://skills.riverbend.example/skill/plc-programming</code>. When everyone points to the
 	same address, a match is no longer a guess.
 </p>

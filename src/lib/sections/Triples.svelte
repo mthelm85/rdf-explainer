@@ -30,7 +30,7 @@
 		{:else}
 			Three triples. The object of one is the subject of the next: Maria holds a degree, the degree
 			certifies a skill, and a job requires that skill. Following the arrows shows Maria may fit the
-			job, without anyone writing code for that question.
+			job.
 		{/if}
 	</figcaption>
 </figure>

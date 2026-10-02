@@ -10,13 +10,14 @@
 
 <p>
 	RDF is a data model, not a file format. The same graph can be written in several standard
-	syntaxes. Two common formats are: <strong>Turtle</strong>, which is compact and easy to read, and
-	<strong>JSON-LD</strong>, which is ordinary JSON with a little context added.
+	syntaxes. Three common formats are: <strong>Turtle</strong>, which is compact and easy to read;
+	<strong>JSON-LD</strong>, which is ordinary JSON with a little context added; and
+	<strong>N-Triples</strong>, which writes one triple per line with every name spelled out in full.
 </p>
 
 <p>
 	The examples below are small pieces of the data used above: a job posting, a worker’s record and a
-	skill. Each shows a small graph, then the same triples written both ways. Prefixes such as
+	skill. Each shows a small graph, then the same triples written all three ways. In Turtle, prefixes such as
 	<code>schema:</code> are shorthand for long web addresses, declared once at the top.
 </p>
 
@@ -32,6 +33,12 @@
 	predicate, next object”, so a description reads almost like a sentence. In JSON-LD, the
 	<code>@context</code> says which keys are vocabulary terms, and <code>@id</code> gives the thing its
 	name.
+</p>
+
+<p>
+	N-Triples drops all of the shorthand. It is verbose, but it shows most plainly what an RDF graph
+	is: a list of triples, each a subject, a predicate and an object, and nearly all of them IRIs. Only
+	plain values such as names and salaries are not.
 </p>
 
 <h3>A worker’s record</h3>

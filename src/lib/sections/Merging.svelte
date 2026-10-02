@@ -20,7 +20,8 @@
 <h2 id="merging">Data that merges</h2>
 
 <p>
-	Because names are shared, combining datasets is just pouring their triples together. Below, an employer, a college and a worker each publish their own data. Nobody agreed on a
+	Because names are shared, combining datasets is seamless: their triples simply go into one graph.
+	Below, an employer, a college and a worker each publish their own data. Nobody agreed on a
 	database schema, only on the names.
 </p>
 
@@ -52,6 +53,6 @@
 
 <p>
 	When the graphs merge, nodes with the same IRI become one node, and new paths appear. The blue
-	lines trace Maria’s credential to the skills it certifies, and on to every job that asks for them.
+	lines in the merged graph trace Maria’s credential to the skills it certifies, and on to every job that asks for them.
 	None of the three publishers held that information alone.
 </p>

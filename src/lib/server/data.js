@@ -80,6 +80,7 @@ export async function getExamples() {
 			...ex,
 			turtle,
 			jsonld: json,
+			ntriples: quads.map(nquad).join('\n'),
 			triples: quads.map((q) => ({
 				s: curie(q.subject.value),
 				p: q.predicate.value === RDF_TYPE ? 'a' : curie(q.predicate.value),

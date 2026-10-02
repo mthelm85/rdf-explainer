@@ -4,6 +4,6 @@ export const SECTIONS = [
 	{ id: 'names', title: 'One name for one thing' },
 	{ id: 'merging', title: 'Data that merges' },
 	{ id: 'why', title: 'Why it matters' },
-	{ id: 'start', title: 'Where to start' },
-	{ id: 'syntax', title: 'Writing it down' }
+	{ id: 'syntax', title: 'Writing it down' },
+	{ id: 'start', title: 'Where to start' }
 ];

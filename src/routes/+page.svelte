@@ -4,11 +4,15 @@
 	import Syntax from '#lib/sections/Syntax.svelte';
 	import Merging from '#lib/sections/Merging.svelte';
 	import Why from '#lib/sections/Why.svelte';
+	import Start from '#lib/sections/Start.svelte';
 
 	let { data } = $props();
 </script>
 
-<h1 id="top">RDF, briefly</h1>
+<header id="top">
+	<h1>A Primer on the Resource Description Framework</h1>
+	<p class="subtitle">And how it can help reduce labor market friction</p>
+</header>
 
 <p class="lede">
 	The Resource Description Framework is a simple way to write down facts so that data from
@@ -21,3 +25,4 @@
 <Merging quads={data.quads} />
 <Why quads={data.quads} />
 <Syntax examples={data.examples} />
+<Start />

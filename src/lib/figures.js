@@ -295,10 +295,10 @@ const PHRASES = [
 export function namesFigure(width) {
   const narrow = width < 560;
   const W = width;
-  const H = narrow ? 320 : 230;
+  const H = narrow ? 340 : 230;
   const rowH = narrow ? 52 : 54;
   const left = PHRASES.map((_, i) => ({x: 0, y: 26 + i * rowH}));
-  const target = narrow ? {x: 12, y: H - 26} : {x: W - 200, y: 26 + 1.5 * rowH};
+  const target = narrow ? {x: 12, y: H - 44} : {x: W - 236, y: 26 + 1.5 * rowH};
   const s = svg(W, H, "Four documents describe the same skill in different words.");
 
   const link = (i) =>
@@ -326,7 +326,9 @@ export function namesFigure(width) {
   const t = s.append("g").attr("transform", `translate(${target.x},${target.y})`);
   const dot = t.append("circle").attr("r", 5).attr("fill", "var(--faint)");
   const title = t.append("text").attr("class", "label").attr("x", 14).attr("dy", "-0.2em");
+  // The skill's full IRI, broken after the host so it fits beside the links.
   const sub = t.append("text").attr("class", "mono").attr("x", 14).attr("dy", "1.2em");
+  const sub2 = t.append("text").attr("class", "mono").attr("x", 14).attr("dy", "2.5em");
 
   const el = s.node();
   el.update = (mode) => {
@@ -341,7 +343,8 @@ export function namesFigure(width) {
       });
     dot.transition().duration(400).attr("fill", on ? "var(--accent)" : "var(--faint)");
     title.text(on ? "PLC Programming" : "No match");
-    sub.text(on ? "sk:plc-programming" : "four unrelated strings");
+    sub.text(on ? "https://skills.riverbend.example/" : "four unrelated strings");
+    sub2.text(on ? "skill/plc-programming" : "");
   };
   el.update("text");
   return el;
