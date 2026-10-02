@@ -148,7 +148,7 @@ export function chainFigure(width) {
   ];
   const narrow = width < 560;
   const W = width;
-  const H = narrow ? 380 : 150;
+  const H = narrow ? 380 : 152;
 
   // Node positions for each state
   const layout = {
@@ -203,11 +203,23 @@ export function chainFigure(width) {
     .attr("text-anchor", narrow ? "start" : "middle")
     .text((d) => d.sub);
 
-  // Subject / predicate / object, shown for the single triple
+  // Subject / predicate / object, shown for the single triple: each part
+  // gets a curly underbrace whose tip points at its name.
+  const braceTop = 110, braceDepth = 10;
+  const spans = !narrow && [
+    [at("one", 0).x - 40, at("one", 0).x + 40],
+    // centred on the arrow, clear of the other two braces
+    (() => {
+      const mid = (at("one", 0).x + at("one", 1).x) / 2;
+      const w = Math.min(mid - (at("one", 0).x + 54), at("one", 1).x - 86 - mid);
+      return [mid - w, mid + w];
+    })(),
+    [at("one", 1).x - 72, at("one", 1).x + 72]
+  ];
   const roles = [
-    {t: "subject", at: () => (narrow ? {x: 40, y: at("one", 0).y + 36} : {x: at("one", 0).x, y: 120})},
-    {t: "predicate", at: () => (narrow ? {x: 40, y: labelAt("one", edges[0]).y + 16} : {x: labelAt("one", edges[0]).x, y: 120})},
-    {t: "object", at: () => (narrow ? {x: 40, y: at("one", 1).y + 36} : {x: at("one", 1).x, y: 120})}
+    {t: "subject", at: () => (narrow ? {x: 40, y: at("one", 0).y + 36} : {x: (spans[0][0] + spans[0][1]) / 2, y: 137})},
+    {t: "predicate", at: () => (narrow ? {x: 40, y: labelAt("one", edges[0]).y + 16} : {x: (spans[1][0] + spans[1][1]) / 2, y: 137})},
+    {t: "object", at: () => (narrow ? {x: 40, y: at("one", 1).y + 36} : {x: (spans[2][0] + spans[2][1]) / 2, y: 137})}
   ];
   const role = s.append("g").selectAll("text").data(roles).join("text")
     .attr("class", "role")
@@ -216,11 +228,19 @@ export function chainFigure(width) {
     .attr("y", (d) => d.at().y)
     .text((d) => d.t);
   if (!narrow) {
-    // a light bracket under each part
-    s.append("g").attr("class", "brackets").selectAll("line").data(roles).join("line")
-      .attr("stroke", "var(--rule)")
-      .attr("x1", (d) => d.at().x - 34).attr("x2", (d) => d.at().x + 34)
-      .attr("y1", 104).attr("y2", 104);
+    // A horizontal curly brace from x1 to x2, opening upward, tip pointing down.
+    const brace = ([x1, x2]) => {
+      const y = braceTop, h = braceDepth, q = h / 2, mid = (x1 + x2) / 2;
+      return `M${x1},${y} Q${x1},${y + q} ${x1 + q},${y + q} L${mid - q},${y + q} Q${mid},${y + q} ${mid},${y + h} ` +
+        `Q${mid},${y + q} ${mid + q},${y + q} L${x2 - q},${y + q} Q${x2},${y + q} ${x2},${y}`;
+    };
+    s.append("g").attr("class", "braces").selectAll("path").data(spans).join("path")
+      .attr("d", brace)
+      .attr("fill", "none")
+      .attr("stroke", "var(--faint)")
+      .attr("stroke-width", 1.25)
+      .attr("stroke-linecap", "round")
+      .attr("stroke-linejoin", "round");
   }
 
   let state = null;
@@ -255,7 +275,7 @@ export function chainFigure(width) {
       .attr("y", (e) => labelAt(mode, e).y)
       .attr("opacity", (e, i) => (i === 0 || chain ? 1 : 0));
     t(role).attr("opacity", chain ? 0 : 1);
-    t(s.selectAll(".brackets line")).attr("opacity", chain ? 0 : 1);
+    t(s.selectAll(".braces path")).attr("opacity", chain ? 0 : 1);
   }
 
   const el = s.node();
