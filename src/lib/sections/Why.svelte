@@ -470,6 +470,8 @@
 
 	.iri {
 		font-size: 0.76rem;
+		background: none;
+		padding: 0;
 		overflow-wrap: anywhere;
 	}
 

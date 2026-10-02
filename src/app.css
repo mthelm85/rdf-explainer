@@ -81,7 +81,10 @@ a:hover {
 
 code {
 	font: 0.85em var(--mono);
-	color: var(--muted);
+	color: var(--ink);
+	background: var(--bg-alt);
+	padding: 0.1em 0.35em;
+	border-radius: 4px;
 	overflow-wrap: anywhere;
 }
 
@@ -97,6 +100,8 @@ pre {
 pre code {
 	font: inherit;
 	color: var(--ink);
+	background: none;
+	padding: 0;
 	overflow-wrap: normal;
 }
 
@@ -224,6 +229,8 @@ svg[class^='plot-'] {
 	margin-top: 2px;
 	font: 11px/1.4 var(--mono);
 	color: #c9c9c9;
+	background: none;
+	padding: 0;
 	overflow-wrap: anywhere;
 }
 
