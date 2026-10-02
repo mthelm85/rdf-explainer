@@ -5,25 +5,37 @@
 
 	let { children } = $props();
 
-	// Highlight the section currently being read.
+	// Highlight the section currently being read: the last heading that has
+	// scrolled past a line near the top of the window. After a menu click,
+	// the clicked section stays highlighted until the reader scrolls again.
 	let current = $state(SECTIONS[0].id);
+	let pinned = false;
 	$effect(() => {
 		const headings = SECTIONS.map((s) => document.getElementById(s.id)).filter(Boolean);
 		const update = () => {
-			const line = window.innerHeight * 0.3;
+			if (pinned) return;
+			const line = Math.min(140, window.innerHeight * 0.25);
 			let active = SECTIONS[0].id;
 			for (const h of headings) if (/** @type {HTMLElement} */ (h).getBoundingClientRect().top <= line) active = /** @type {HTMLElement} */ (h).id;
-			if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) active = SECTIONS.at(-1).id;
 			current = active;
 		};
+		const release = () => (pinned = false);
 		update();
 		window.addEventListener('scroll', update, { passive: true });
 		window.addEventListener('resize', update);
+		for (const ev of ['wheel', 'touchstart', 'keydown']) window.addEventListener(ev, release, { passive: true });
 		return () => {
 			window.removeEventListener('scroll', update);
 			window.removeEventListener('resize', update);
+			for (const ev of ['wheel', 'touchstart', 'keydown']) window.removeEventListener(ev, release);
 		};
 	});
+
+	/** @param {string} id */
+	function go(id) {
+		current = id;
+		pinned = true;
+	}
 </script>
 
 <svelte:head>
@@ -41,7 +53,7 @@
 		<ol>
 			{#each SECTIONS as s (s.id)}
 				<li>
-					<a href="#{s.id}" aria-current={s.id === current ? 'location' : undefined}>{s.title}</a>
+					<a href="#{s.id}" aria-current={s.id === current ? 'location' : undefined} onclick={() => go(s.id)}>{s.title}</a>
 				</li>
 			{/each}
 		</ol>

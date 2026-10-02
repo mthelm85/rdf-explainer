@@ -163,10 +163,6 @@ svg .mono {
 	fill: var(--muted);
 }
 
-svg .hover-label {
-	fill: var(--ink);
-	font-weight: 600;
-}
 
 svg .mono.strong {
 	fill: var(--ink);
@@ -191,4 +187,52 @@ svg[class^='plot-'] {
 	--plot-background: var(--bg);
 	color: var(--muted);
 	font-size: 11px;
+}
+
+/* Tooltip */
+.tooltip {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 100;
+	max-width: 280px;
+	padding: 7px 10px;
+	border-radius: 8px;
+	background: rgba(17, 17, 17, 0.94);
+	color: #fff;
+	font: 12px/1.4 var(--sans);
+	box-shadow:
+		0 1px 2px rgba(0, 0, 0, 0.12),
+		0 8px 24px rgba(0, 0, 0, 0.16);
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 120ms ease;
+	will-change: transform;
+}
+
+.tooltip.visible {
+	opacity: 1;
+}
+
+.tooltip strong {
+	display: block;
+	font-weight: 600;
+}
+
+.tooltip code {
+	display: block;
+	margin-top: 2px;
+	font: 11px/1.4 var(--mono);
+	color: #c9c9c9;
+	overflow-wrap: anywhere;
+}
+
+.tooltip .dim {
+	color: #c9c9c9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.tooltip {
+		transition: none;
+	}
 }

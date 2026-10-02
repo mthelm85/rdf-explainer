@@ -5,6 +5,7 @@
 	import Toggle from '#lib/components/Toggle.svelte';
 	import { indexQuads, networkMini, SK } from '#lib/figures.js';
 	import { PHRASING, sourceOf } from '#lib/data/phrasing.js';
+	import { showTooltip, moveTooltip, hideTooltip } from '#lib/tooltip.js';
 
 	/** @type {{ quads: any[] }} */
 	let { quads } = $props();
@@ -20,7 +21,7 @@
 
 	/** @param {number} width */
 	function growthChart(width) {
-		return Plot.plot({
+		const plot = Plot.plot({
 			width,
 			height: 240,
 			marginLeft: 40,
@@ -34,9 +35,36 @@
 				Plot.line(curve, { x: 'n', y: 'mappings', stroke: 'approach', strokeWidth: 1.5 }),
 				Plot.dot(curve.filter((d) => d.n === orgs), { x: 'n', y: 'mappings', fill: 'approach', r: 4 }),
 				Plot.text(curve.filter((d) => d.n === 40), { x: 'n', y: 'mappings', text: 'approach', dx: 8, textAnchor: 'start', fill: 'var(--ink)' }),
-				Plot.tip(curve, Plot.pointerX({ x: 'n', y: 'mappings', title: (d) => `${d.approach}\n${d.n} organizations → ${d.mappings.toLocaleString()} mappings` }))
+				// Hover: a light guide and rings on both curves; the tooltip itself is ours.
+				Plot.ruleX(curve, Plot.pointerX({ x: 'n', stroke: 'var(--rule)', maxRadius: 60 })),
+				...['Point-to-point', 'Shared vocabulary'].map((a) =>
+					Plot.dot(curve.filter((d) => d.approach === a), Plot.pointerX({ x: 'n', y: 'mappings', stroke: 'approach', fill: 'var(--bg)', r: 4.5, strokeWidth: 1.5, maxRadius: 60 }))
+				)
 			]
 		});
+		/** @type {PointerEvent | null} */
+		let last = null;
+		const update = () => {
+			const v = /** @type {any} */ (plot).value;
+			if (!v || !last) return hideTooltip();
+			const n = v.n;
+			showTooltip(
+				`<strong>${n} organizations</strong>` +
+					`<span class="dim">Point-to-point:</span> ${((n * (n - 1)) / 2).toLocaleString()} mappings<br>` +
+					`<span class="dim">Shared vocabulary:</span> ${n} mappings`,
+				last
+			);
+		};
+		plot.addEventListener('pointermove', (e) => {
+			last = /** @type {PointerEvent} */ (e);
+			update();
+		});
+		plot.addEventListener('input', update);
+		plot.addEventListener('pointerleave', () => {
+			last = null;
+			hideTooltip();
+		});
+		return plot;
 	}
 
 	// ── Keyword vs. linked matching ──────────────────────────────────────────
@@ -263,7 +291,7 @@
 	<a href="https://www.imsglobal.org/spec/ob/v3p0/">Open Badges 3.0</a> for verifiable achievements,
 	and <a href="https://www.w3.org/TR/skos-reference/">SKOS</a> for skill frameworks. All of them can
 	be published as ordinary JSON with one extra line, an <code>@context</code>, which is often the
-	first step.
+	first step. The last section shows what that looks like.
 </p>
 
 <style>

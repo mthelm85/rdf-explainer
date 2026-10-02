@@ -1,4 +1,5 @@
 import * as d3 from "d3";
+import {showTooltip, moveTooltip, hideTooltip, esc} from "./tooltip.js";
 
 const SCHEMA = "https://schema.org/";
 const SKOS = "http://www.w3.org/2004/02/skos/core#";
@@ -428,7 +429,7 @@ export function mergeFigure({quads, index, panels, width}) {
   const gLinks = s.append("g").attr("fill", "none").attr("shape-rendering", "geometricPrecision").attr("stroke-linecap", "round");
   const gHits = s.append("g").attr("fill", "none").attr("stroke", "transparent").attr("stroke-width", 10);
   const gNodes = s.append("g");
-  const hoverLabel = s.append("text").attr("class", "mono hover-label").attr("pointer-events", "none").attr("opacity", 0);
+
   let current = new Map();
   let hitTimer;
 
@@ -540,7 +541,7 @@ export function mergeFigure({quads, index, panels, width}) {
 
     heads.transition().duration(400).attr("opacity", merged ? 0 : 1);
     rules.transition().duration(400).attr("opacity", merged ? 0 : 1);
-    hoverLabel.attr("opacity", 0);
+    hideTooltip();
 
     // Where every node starts this transition: its old spot, or (when merging)
     // the average of the copies it is replacing, or (when splitting) the merged node.
@@ -610,7 +611,6 @@ export function mergeFigure({quads, index, panels, width}) {
           const g = e.append("g").attr("transform", (d) => `translate(${start(d).x},${start(d).y})`);
           g.append("circle");
           g.append("text");
-          g.append("title");
           return g;
         },
         (u) => u,
@@ -653,7 +653,10 @@ export function mergeFigure({quads, index, panels, width}) {
       .delay(DURATION - 320)
       .duration(260)
       .attr("opacity", 1);
-    node.select("title").text((d) => `${index.label(d.iri)}\n${d.iri}`);
+    node
+      .on("pointerenter", (event, d) => showTooltip(`<strong>${esc(index.label(d.iri))}</strong><code>${esc(d.iri)}</code>`, event))
+      .on("pointermove", moveTooltip)
+      .on("pointerleave", hideTooltip);
 
     const visible = new Map();
     gLinks.selectAll("path").each(function (d) {
@@ -675,17 +678,16 @@ export function mergeFigure({quads, index, panels, width}) {
           restyle(el, d, true);
           el.parentNode.appendChild(el);
         }
-        const [x, y] = d3.pointer(event, s.node());
-        hoverLabel.text(d.label).attr("x", x + 8).attr("y", y - 8).attr("opacity", 1);
+        showTooltip(
+          `<strong>${esc(d.label)}</strong><span class="dim">${esc(short(index.label(d.a.iri)))} → ${esc(short(index.label(d.b.iri)))}</span>`,
+          event
+        );
       })
-      .on("pointermove", (event) => {
-        const [x, y] = d3.pointer(event, s.node());
-        hoverLabel.attr("x", x + 8).attr("y", y - 8);
-      })
+      .on("pointermove", moveTooltip)
       .on("pointerleave", function (event, d) {
         const el = visible.get(d.id);
         if (el) restyle(el, d, false);
-        hoverLabel.attr("opacity", 0);
+        hideTooltip();
       });
     clearTimeout(hitTimer);
     hitTimer = setTimeout(() => {

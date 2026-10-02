@@ -15,7 +15,8 @@
 </p>
 
 <p>
-	Each example below shows a small graph, then the same triples written both ways. Prefixes such as
+	The examples below are small pieces of the data used above: a job posting, a worker’s record and a
+	skill. Each shows a small graph, then the same triples written both ways. Prefixes such as
 	<code>schema:</code> are shorthand for long web addresses, declared once at the top.
 </p>
 

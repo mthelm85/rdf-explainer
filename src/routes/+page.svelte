@@ -18,6 +18,6 @@
 
 <Triples />
 <Names />
-<Syntax examples={data.examples} />
 <Merging quads={data.quads} />
 <Why quads={data.quads} />
+<Syntax examples={data.examples} />
