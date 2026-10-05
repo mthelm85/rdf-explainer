@@ -68,9 +68,10 @@
 	}
 
 	// ── Keyword vs. linked matching ──────────────────────────────────────────
-	let worker = $state('https://wallet.example/maria');
+	// One worker and one job make the point: Maria and the Acme posting used throughout the page.
+	const worker = 'https://wallet.example/maria';
+	const JOB = 'https://jobs.acme-robotics.example/job-automation-technician';
 	let by = $state('wording');
-	let selected = $state(0);
 	const S = 'https://schema.org/';
 	const out = $derived(d3.group(quads, (q) => q.s));
 	/** @param {string} s @param {string} p */
@@ -81,43 +82,30 @@
 	const norm = (s) => (s ?? '').toLowerCase().trim();
 	const firstName = $derived(index.label(worker).split(' ')[0]);
 
-	const jobs = $derived.by(() => {
+	const job = $derived.by(() => {
 		/** @type {Map<string, string | undefined>} skill IRI → how the worker's evidence words it */
 		const has = new Map();
 		for (const cred of objs(worker, 'hasCredential'))
 			for (const s of objs(cred, 'competencyRequired')) has.set(s, PHRASING[sourceOf(cred)]?.[local(s)]);
 		for (const s of objs(worker, 'knowsAbout')) has.set(s, PHRASING[sourceOf(worker)]?.[local(s)]);
 		const words = new Set([...has.values()].map(norm));
-		return [...out.keys()]
-			.filter((s) => index.types(s).includes(S + 'JobPosting'))
-			.map((job) => {
-				const skills = objs(job, 'skills').map((iri) => {
-					const posting = PHRASING[sourceOf(job)]?.[local(iri)] ?? index.label(iri);
-					const evidence = has.get(iri);
-					return {
-						iri,
-						curie: `sk:${local(iri)}`,
-						posting,
-						evidence,
-						linked: has.has(iri),
-						keyword: words.has(norm(posting))
-					};
-				});
-				return {
-					title: index.label(job),
-					employer: index.label(objs(job, 'hiringOrganization')[0]),
-					skills,
-					keyword: skills.filter((d) => d.keyword).length,
-					linked: skills.filter((d) => d.linked).length
-				};
-			})
-			.sort((a, b) => b.linked / b.skills.length - a.linked / a.skills.length);
-	});
-	const job = $derived(jobs[Math.min(selected, jobs.length - 1)]);
-	const totals = $derived({
-		required: d3.sum(jobs, (j) => j.skills.length),
-		keyword: d3.sum(jobs, (j) => j.keyword),
-		linked: d3.sum(jobs, (j) => j.linked)
+		const skills = objs(JOB, 'skills').map((iri) => {
+			const posting = PHRASING[sourceOf(JOB)]?.[local(iri)] ?? index.label(iri);
+			return {
+				iri,
+				curie: `sk:${local(iri)}`,
+				posting,
+				evidence: has.get(iri),
+				linked: has.has(iri),
+				keyword: words.has(norm(posting))
+			};
+		});
+		return {
+			title: index.label(JOB),
+			skills,
+			keyword: skills.filter((d) => d.keyword).length,
+			linked: skills.filter((d) => d.linked).length
+		};
 	});
 	/** @param {{ linked: boolean, keyword: boolean }} d */
 	const matched = (d) => (by === 'iri' ? d.linked : d.keyword);
@@ -183,52 +171,9 @@
 
 <p>
 	With RDF, each organization still uses its own words, but also links each skill to an IRI in a
-	shared skills framework. Software can then compare the IRIs instead of the words. Pick a worker
-	and a job, and compare the two methods.
+	shared skills framework. Software can then compare the IRIs instead of the words. Below, Maria’s
+	record is checked against the Automation Technician posting both ways.
 </p>
-
-<div class="controls">
-	<Toggle
-		options={[
-			{ value: 'https://wallet.example/maria', label: 'Maria' },
-			{ value: 'https://wallet.example/jordan', label: 'Jordan' },
-			{ value: 'https://wallet.example/sam', label: 'Sam' }
-		]}
-		bind:value={worker}
-		label="Worker"
-	/>
-</div>
-
-<table class="summary">
-	<thead>
-		<tr>
-			<th scope="col">Job</th>
-			<th scope="col" class="num">Matched by wording</th>
-			<th scope="col" class="num">Matched by IRI</th>
-		</tr>
-	</thead>
-	<tbody>
-		{#each jobs as j, i (j.title)}
-			<tr class:current={i === selected}>
-				<td>
-					<button type="button" onclick={() => (selected = i)} aria-pressed={i === selected}>
-						{j.title}
-					</button>
-					<span class="muted">{j.employer}</span>
-				</td>
-				<td class="num">{j.keyword} of {j.skills.length}</td>
-				<td class="num strong">{j.linked} of {j.skills.length}</td>
-			</tr>
-		{/each}
-	</tbody>
-	<tfoot>
-		<tr>
-			<td>All jobs</td>
-			<td class="num">{totals.keyword} of {totals.required}</td>
-			<td class="num strong">{totals.linked} of {totals.required}</td>
-		</tr>
-	</tfoot>
-</table>
 
 <Toggle
 	options={[
@@ -325,82 +270,6 @@
 		font-size: 1.6rem;
 		font-weight: 600;
 		line-height: 1.2;
-	}
-
-	.controls {
-		display: flex;
-		flex-wrap: wrap;
-		column-gap: 2.5rem;
-	}
-
-	/* Summary table */
-	.summary {
-		width: 100%;
-		border-collapse: collapse;
-		font-size: 0.85rem;
-		margin: 0.5rem 0 1rem;
-	}
-
-	.summary th {
-		text-align: left;
-		font-weight: 500;
-		color: var(--muted);
-		border-bottom: 1px solid var(--rule);
-		padding: 0 0 6px;
-	}
-
-	.summary td {
-		padding: 6px 0;
-		border-bottom: 1px solid var(--rule);
-	}
-
-	.summary tfoot td {
-		border-bottom: 0;
-		color: var(--muted);
-	}
-
-	.summary .num {
-		text-align: right;
-		font-variant-numeric: tabular-nums;
-		white-space: nowrap;
-		padding-left: 1rem;
-	}
-
-	.summary .strong {
-		color: var(--accent);
-		font-weight: 600;
-	}
-
-	.summary .muted {
-		color: var(--muted);
-		font-size: 0.78rem;
-		margin-left: 0.4rem;
-	}
-
-	.summary button {
-		appearance: none;
-		background: none;
-		border: 0;
-		padding: 0;
-		font: inherit;
-		color: var(--ink);
-		cursor: pointer;
-		text-decoration: underline;
-		text-decoration-color: var(--rule);
-		text-underline-offset: 3px;
-		text-align: left;
-	}
-
-	@media (max-width: 560px) {
-		.summary .muted {
-			display: block;
-			margin-left: 0;
-		}
-	}
-
-	.summary tr.current button {
-		font-weight: 600;
-		text-decoration-color: var(--ink);
 	}
 
 	/* Side-by-side comparison */
