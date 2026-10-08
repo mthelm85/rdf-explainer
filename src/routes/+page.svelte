@@ -14,15 +14,13 @@
 	<p class="subtitle">And how it can help reduce labor market friction</p>
 </header>
 
-<p class="lede">
+<p>
 	The Resource Description Framework is a simple way to write down facts so that data from
 	different organizations fits together on its own. Here is how it works, and why it matters for
 	connecting workers, employers and educators.
 </p>
 
 <p class="caption print-only">
-	Interactive version:
-	<a href="https://mthelm85.github.io/rdf-explainer/">mthelm85.github.io/rdf-explainer</a>.
 	Organizations, people and <code>.example</code> addresses here are fictional.
 </p>
 

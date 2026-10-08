@@ -112,11 +112,6 @@ pre code {
 	overflow-wrap: normal;
 }
 
-.lede {
-	font-size: 1.2rem;
-	line-height: 1.55;
-	color: var(--muted);
-}
 
 .caption {
 	font-size: 0.85rem;
