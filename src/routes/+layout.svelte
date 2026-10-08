@@ -147,6 +147,22 @@
 		border-top: 1px solid var(--rule);
 	}
 
+	@media print {
+		.shell {
+			display: block;
+			padding: 0;
+		}
+
+		main {
+			padding: 0;
+		}
+
+		/* Its note is printed under the introduction instead. */
+		footer {
+			display: none;
+		}
+	}
+
 	/* Narrow screens: the menu becomes a compact list above the page */
 	@media (max-width: 1000px) {
 		.shell {

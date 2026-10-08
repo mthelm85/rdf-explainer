@@ -20,6 +20,12 @@
 	connecting workers, employers and educators.
 </p>
 
+<p class="caption print-only">
+	Interactive version:
+	<a href="https://mthelm85.github.io/rdf-explainer/">mthelm85.github.io/rdf-explainer</a>.
+	Organizations, people and <code>.example</code> addresses here are fictional.
+</p>
+
 <Triples />
 <Names />
 <Merging quads={data.quads} />

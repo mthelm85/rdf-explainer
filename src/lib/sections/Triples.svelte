@@ -34,3 +34,13 @@
 		{/if}
 	</figcaption>
 </figure>
+
+<!-- On paper, the toggle can't be clicked, so the linked view follows the single triple. -->
+<figure class="print-only">
+	<Figure draw={chainFigure} update={(node) => node.update('chain')} />
+	<figcaption class="caption">
+		Three triples. The object of one is the subject of the next: Maria holds a degree, the degree
+		certifies a skill, and a job requires that skill. Following the arrows shows Maria may fit the
+		job.
+	</figcaption>
+</figure>

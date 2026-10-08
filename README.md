@@ -10,9 +10,9 @@ One page, with a vertical menu that tracks your place:
 
 1. **A fact has three parts.** Triples, and how they chain into a graph.
 2. **One name for one thing.** Four phrasings of a skill, joined by one shared IRI.
-3. **Writing it down.** Three small graphs (a job posting, a worker's record, a skill with synonyms) in Turtle and JSON-LD.
-4. **Data that merges.** An employer's, a college's and a worker's data merging on shared names.
-5. **Why it matters.** The integration explosion (point-to-point vs. shared vocabularies), and keyword vs. linked-skill matching.
+3. **Data that merges.** An employer's, a college's and a worker's data merging on shared names.
+4. **Why it matters.** The integration explosion (point-to-point vs. shared vocabularies), and keyword vs. IRI matching.
+5. **Writing it down.** Three small graphs (a job posting, a worker's record, a skill with synonyms) in Turtle, JSON-LD and N-Triples.
 6. **Where to start.** The standards that already exist.
 
 ## Data
@@ -30,7 +30,10 @@ npm install
 npm run dev      # preview at http://localhost:5173
 npm run build    # static site in ./build
 npm run check    # type and template checks
+npm run pdf      # after a build: render ./an-introduction-to-rdf.pdf
 ```
+
+The PDF uses the page's print styles: menus and toggles are hidden, and each toggled figure is printed in both of its states. `npm run pdf` needs a Chromium; set `CHROMIUM_PATH` if Playwright hasn't installed one.
 
 Pushes to `main` deploy to GitHub Pages via `.github/workflows/deploy.yml`, which sets `BASE_PATH` so the site works under `/rdf-explainer/`.
 

@@ -27,7 +27,7 @@
 	</figcaption>
 </figure>
 
-<div class="bar">
+<div class="bar screen-only">
 	<Toggle
 		options={[
 			{ value: 'turtle', label: 'Turtle' },
@@ -42,11 +42,25 @@
 <!-- highlight() escapes the source before adding token spans -->
 <!-- Focusable so keyboard users can scroll long lines horizontally. -->
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-<pre tabindex="0" aria-label="{example.title} in {NAMES[syntax]}"><code
+<pre class="screen-only" tabindex="0" aria-label="{example.title} in {NAMES[syntax]}"><code
 		>{@html highlight(text, syntax === 'jsonld' ? 'jsonld' : 'turtle')}</code
 	></pre>
 
+<!-- On paper, all three formats in turn. -->
+<div class="print-only">
+	{#each Object.entries(NAMES) as [key, name] (key)}
+		<p class="format">{name}</p>
+		<pre><code>{@html highlight(example[key], key === 'jsonld' ? 'jsonld' : 'turtle')}</code></pre>
+	{/each}
+</div>
+
 <style>
+	.format {
+		font: 600 0.8rem var(--sans);
+		color: var(--muted);
+		margin: 1rem 0 0.35rem;
+	}
+
 	.bar {
 		display: flex;
 		align-items: baseline;
@@ -67,7 +81,12 @@
 		color: var(--ink);
 	}
 
-	pre {
+	pre,
+	.print-only {
 		margin-bottom: 1.5rem;
+	}
+
+	.print-only pre {
+		margin-bottom: 0;
 	}
 </style>

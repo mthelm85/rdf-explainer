@@ -107,8 +107,8 @@
 			linked: skills.filter((d) => d.linked).length
 		};
 	});
-	/** @param {{ linked: boolean, keyword: boolean }} d */
-	const matched = (d) => (by === 'iri' ? d.linked : d.keyword);
+	/** @param {{ linked: boolean, keyword: boolean }} d @param {string} method */
+	const matched = (d, method) => (method === 'iri' ? d.linked : d.keyword);
 </script>
 
 <h2 id="why">Why it matters</h2>
@@ -184,44 +184,53 @@
 	label="Matching method"
 />
 
-<figure class="compare" data-by={by}>
-	<div class="row head">
-		<div>{job.title} asks for</div>
-		<div></div>
-		<div>{firstName}’s record shows</div>
-	</div>
-	{#each job.skills as d (d.iri)}
-		<div class="row" class:match={matched(d)}>
-			<div class="term">
-				<span class="words">“{d.posting}”</span>
-				<code class="iri">{d.curie}</code>
-			</div>
-			<div class="link" aria-hidden="true"><span></span></div>
-			<div class="term">
-				{#if d.linked}
-					<span class="words">“{d.evidence ?? d.posting}”</span>
-					<code class="iri">{d.curie}</code>
-				{:else}
-					<span class="none">no evidence</span>
-				{/if}
-			</div>
-			<span class="sr-only">{matched(d) ? 'Match' : 'No match'}</span>
+{#snippet comparison(/** @type {string} */ method)}
+	<figure class="compare" data-by={method}>
+		<div class="row head">
+			<div>{job.title} asks for</div>
+			<div></div>
+			<div>{firstName}’s record shows</div>
 		</div>
-	{/each}
-	<figcaption class="caption">
-		{#if by === 'wording'}
-			Comparing wording finds <strong>{job.keyword} of {job.skills.length}</strong> skills for this
-			job. Only identical text counts, so “Ladder logic” and “PLC Programming” don’t match.
-		{:else}
-			Comparing IRIs finds <strong>{job.linked} of {job.skills.length}</strong>. Different words that
-			point to the same IRI now match, with no guessing.
-			{#if job.linked < job.skills.length}
-				The rest are skills {firstName} genuinely can’t show yet.
+		{#each job.skills as d (d.iri)}
+			<div class="row" class:match={matched(d, method)}>
+				<div class="term">
+					<span class="words">“{d.posting}”</span>
+					<code class="iri">{d.curie}</code>
+				</div>
+				<div class="link" aria-hidden="true"><span></span></div>
+				<div class="term">
+					{#if d.linked}
+						<span class="words">“{d.evidence ?? d.posting}”</span>
+						<code class="iri">{d.curie}</code>
+					{:else}
+						<span class="none">no evidence</span>
+					{/if}
+				</div>
+				<span class="sr-only">{matched(d, method) ? 'Match' : 'No match'}</span>
+			</div>
+		{/each}
+		<figcaption class="caption">
+			{#if method === 'wording'}
+				Comparing wording finds <strong>{job.keyword} of {job.skills.length}</strong> skills for this
+				job. Only identical text counts, so “Ladder logic” and “PLC Programming” don’t match.
+			{:else}
+				Comparing IRIs finds <strong>{job.linked} of {job.skills.length}</strong>. Different words that
+				point to the same IRI now match, with no guessing.
+				{#if job.linked < job.skills.length}
+					The rest are skills {firstName} genuinely can’t show yet.
+				{/if}
 			{/if}
-		{/if}
-		IRIs are shortened: <code>sk:</code> stands for <code>https://skills.riverbend.example/skill/</code>.
-	</figcaption>
-</figure>
+			IRIs are shortened: <code>sk:</code> stands for <code>https://skills.riverbend.example/skill/</code>.
+		</figcaption>
+	</figure>
+{/snippet}
+
+<div class="screen-only">{@render comparison(by)}</div>
+<!-- On paper, show both methods one after the other. -->
+<div class="print-only">
+	{@render comparison('wording')}
+	{@render comparison('iri')}
+</div>
 
 <p>
 	Nothing about the people changed, only how the data names things. The same idea lets a college
@@ -270,6 +279,10 @@
 		font-size: 1.6rem;
 		font-weight: 600;
 		line-height: 1.2;
+	}
+
+	.print-only {
+		padding-bottom: 1rem;
 	}
 
 	/* Side-by-side comparison */

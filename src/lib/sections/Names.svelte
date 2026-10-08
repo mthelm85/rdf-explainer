@@ -28,7 +28,11 @@
 	label="View"
 />
 
-<figure>
+<figure class="screen-only">
 	<Figure draw={namesFigure} update={(node) => node.update(names)} />
+</figure>
+
+<figure class="print-only">
+	<Figure draw={namesFigure} update={(node) => node.update('rdf')} />
 </figure>
 

@@ -9,6 +9,7 @@
 
 	let mode = $state('separate');
 	let reach = $state({ jobs: 0, skills: 0 });
+	let merged = $state({ jobs: 0, skills: 0 });
 
 	const PANELS = [
 		{ graph: 'https://jobs.acme-robotics.example/graph', title: 'Employer' },
@@ -47,7 +48,18 @@
 			Separate: no dataset on its own links Maria to a job.
 		{/if}
 		Links mean <em>requires</em>, <em>hiring organization</em>, <em>certifies</em>,
-		<em>recognized by</em>, <em>holds credential</em> or <em>knows about</em>; hover over one to see which.
+		<em>recognized by</em>, <em>holds credential</em> or <em>knows about</em><span class="screen-only">; hover over one to see which</span>.
+	</figcaption>
+</figure>
+
+<figure class="print-only">
+	<Figure
+		draw={(width) => mergeFigure({ quads: quads, index, panels: PANELS, width })}
+		update={(node) => (merged = node.render('merged'))}
+	/>
+	<figcaption class="caption">
+		Merged: Maria now connects to <strong>{merged.jobs} job{merged.jobs === 1 ? '' : 's'}</strong>
+		through <strong>{merged.skills} shared skills</strong>.
 	</figcaption>
 </figure>
 

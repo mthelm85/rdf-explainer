@@ -250,3 +250,73 @@ svg[class^='plot-'] {
 		transition: none;
 	}
 }
+
+/* Print. Toggled figures have print-only copies showing their other state.
+   On screen those copies are drawn off-page, so they are ready when printing. */
+.print-only {
+	position: absolute;
+	left: -99999px;
+	top: 0;
+	width: 680px;
+	visibility: hidden;
+}
+
+@page {
+	size: letter;
+	margin: 0.7in 0.75in;
+}
+
+@media print {
+	body {
+		font-size: 10.5pt;
+		line-height: 1.55;
+	}
+
+	.screen-only,
+	.toggle,
+	.slider,
+	.copy,
+	nav,
+	.tooltip {
+		display: none !important;
+	}
+
+	.print-only {
+		position: static;
+		width: auto;
+		visibility: visible;
+	}
+
+	h2,
+	h3 {
+		break-after: avoid;
+	}
+
+	h2 {
+		margin-top: 2rem;
+	}
+
+	figure,
+	pre,
+	dd {
+		break-inside: avoid;
+	}
+
+	pre {
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+		overflow: visible;
+		font-size: 8pt;
+		padding: 10px 12px;
+	}
+
+	pre code {
+		overflow-wrap: anywhere;
+	}
+
+	p,
+	li {
+		orphans: 3;
+		widows: 3;
+	}
+}
