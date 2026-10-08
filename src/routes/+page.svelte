@@ -20,7 +20,7 @@
 	connecting workers, employers and educators.
 </p>
 
-<p class="caption print-only">
+<p class="print-only">
 	Organizations, people and <code>.example</code> addresses here are fictional.
 </p>
 
